@@ -26,18 +26,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = (
+    <Providers>
+      {children}
+    </Providers>
+  );
+
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-stone-950 text-white`}
       >
-        <StackProvider app={stackServerApp}>
-          <StackTheme>
-            <Providers>
-              {children}
-            </Providers>
-          </StackTheme>
-        </StackProvider>
+        {stackServerApp ? (
+          <StackProvider app={stackServerApp}>
+            <StackTheme>
+              {content}
+            </StackTheme>
+          </StackProvider>
+        ) : (
+          content
+        )}
       </body>
     </html>
   );
