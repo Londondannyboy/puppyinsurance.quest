@@ -23,7 +23,6 @@ export default function AuthPage({ params }: { params: Promise<{ path: string }>
       <div className="w-full max-w-md p-6 bg-stone-900 rounded-2xl border border-stone-800">
         <AuthView 
           path={path} 
-          social={{ providers: ['google'] }}
         />
       </div>
     </main>
