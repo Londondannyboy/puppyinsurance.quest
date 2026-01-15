@@ -7,8 +7,10 @@ import { Role, TextMessage } from '@copilotkit/runtime-client-gql';
 import { motion } from 'framer-motion';
 import { DynamicView, GeneratedView, ViewBlock } from '@/components/DynamicView';
 import { HumeWidget } from '@/components/HumeWidget';
+import { ComparisonPicker } from '@/components/ComparisonPicker';
+import { CountryForceGraph } from '@/components/CountryForceGraph';
 
-// Types matching database schema
+// Types matching database schema (comprehensive)
 interface Destination {
   slug: string;
   country_name: string;
@@ -39,6 +41,67 @@ interface Destination {
     transportation?: number;
     utilities?: number;
   }>;
+  // New comprehensive fields
+  climate_data?: {
+    type: string;
+    annual_sunshine_hours?: number;
+    seasons?: Record<string, { months: string[]; temp_avg_c: number; temp_min_c?: number; description: string }>;
+    best_months?: string[];
+    climate_rating?: number;
+    humidity_avg_percent?: number;
+  };
+  crime_safety?: {
+    safety_index?: number;
+    expat_safety_rating?: number;
+    emergency_number?: string;
+  };
+  healthcare?: {
+    system_type?: string;
+    quality_rating?: number;
+    english_speaking_doctors?: string;
+  };
+  lifestyle?: {
+    work_life_balance_rating?: number;
+    expat_community_size?: string;
+    english_proficiency?: string;
+    cultural_activities?: string[];
+  };
+  dining_nightlife?: {
+    michelin_stars_total?: number;
+    signature_dishes?: string[];
+    avg_meal_cost_casual_eur?: number;
+    avg_meal_cost_fine_eur?: number;
+    nightlife_rating?: number;
+    best_restaurants?: Array<{ name: string; city: string; cuisine: string; price: string; michelin?: number }>;
+  };
+  capital_overview?: {
+    name: string;
+    population?: number;
+    landmarks?: string[];
+  };
+  quality_of_life?: {
+    overall_score?: number;
+    cost_of_living_index?: number;
+    safety_index?: number;
+    climate_index?: number;
+    expat_friendly_index?: number;
+  };
+  digital_nomad_info?: {
+    visa_available?: boolean;
+    visa_name?: string;
+    min_income_monthly_eur?: number;
+    coworking_scene?: string;
+    nomad_community_size?: string;
+  };
+  comparison_highlights?: {
+    similar_to?: string[];
+    unique_selling_points?: string[];
+  };
+  images?: {
+    hero?: string;
+    capital?: string;
+    gradient?: string;
+  };
 }
 
 interface RelocationState {
@@ -50,6 +113,10 @@ interface RelocationState {
     climate?: string;
     purpose?: string;
   };
+  // Dynamic background based on selected country
+  backgroundImage?: string;
+  backgroundGradient?: string;
+  currentCountry?: string;
 }
 
 // Destination Card Component
@@ -240,43 +307,90 @@ function ChatInput() {
   );
 }
 
-// Helper to create a dashboard view from destination data
+// Helper to create a comprehensive dashboard view from destination data
 function createDashboardView(destination: Destination): GeneratedView {
   const primaryCity = destination.cost_of_living?.[0];
-
   const blocks: ViewBlock[] = [];
 
-  // KPIs
-  if (primaryCity) {
-    blocks.push({
-      type: 'kpi',
-      props: {
-        label: `Rent (1BR Center) in ${primaryCity.cityName}`,
-        value: `${primaryCity.currency} ${primaryCity.rent1BRCenter?.toLocaleString()}`,
-        icon: '🏠',
-      },
-    });
-  }
+  // === TOP KPIS ===
   blocks.push({
     type: 'kpi',
     props: {
-      label: 'Visa Options',
-      value: `${destination.visas?.length || 0} available`,
-      icon: '🛂',
+      label: 'Safety Index',
+      value: destination.quality_of_life?.safety_index?.toFixed(1) || destination.crime_safety?.safety_index?.toFixed(1) || 'N/A',
+      icon: '🛡️',
     },
   });
-  if (destination.language) {
+
+  if (destination.quality_of_life?.overall_score) {
     blocks.push({
       type: 'kpi',
       props: {
-        label: 'Official Language',
-        value: destination.language,
-        icon: '🗣️',
+        label: 'Quality of Life',
+        value: `${destination.quality_of_life.overall_score.toFixed(1)}/10`,
+        icon: '⭐',
       },
     });
   }
 
-  // Cost Chart
+  if (destination.digital_nomad_info?.min_income_monthly_eur) {
+    blocks.push({
+      type: 'kpi',
+      props: {
+        label: 'Nomad Visa Income',
+        value: `€${destination.digital_nomad_info.min_income_monthly_eur.toLocaleString()}/mo`,
+        icon: '💻',
+      },
+    });
+  }
+
+  // === TIMELINE ===
+  blocks.push({
+    type: 'timeline',
+    props: {
+      country: destination.country_name,
+      flag: destination.flag,
+      relocationType: 'digital_nomad',
+      familyStatus: 'single',
+    },
+  });
+
+  // === QUALITY OF LIFE RADAR ===
+  if (destination.quality_of_life) {
+    const qol = destination.quality_of_life;
+    blocks.push({
+      type: 'quality_of_life',
+      props: {
+        title: 'Quality of Life Metrics',
+        country: destination.country_name,
+        flag: destination.flag,
+        overallScore: qol.overall_score,
+        metrics: [
+          { label: 'Safety', value: qol.safety_index || 0, icon: '🛡️' },
+          { label: 'Cost of Living', value: 100 - (qol.cost_of_living_index || 50), icon: '💰' },
+          { label: 'Climate', value: qol.climate_index || 0, icon: '☀️' },
+          { label: 'Expat Friendly', value: (qol.expat_friendly_index || 0) * 10, icon: '🌍' },
+        ].filter(m => m.value > 0),
+      },
+    });
+  }
+
+  // === CLIMATE ===
+  if (destination.climate_data && Object.keys(destination.climate_data).length > 0) {
+    blocks.push({
+      type: 'climate',
+      props: {
+        type: destination.climate_data.type || 'Mediterranean',
+        annualSunshineHours: destination.climate_data.annual_sunshine_hours,
+        seasons: destination.climate_data.seasons,
+        bestMonths: destination.climate_data.best_months,
+        rating: destination.climate_data.climate_rating,
+        humidity: destination.climate_data.humidity_avg_percent,
+      },
+    });
+  }
+
+  // === COST OF LIVING ===
   if (primaryCity) {
     blocks.push({
       type: 'cost_chart',
@@ -284,34 +398,90 @@ function createDashboardView(destination: Destination): GeneratedView {
         title: `Monthly Expenses in ${primaryCity.cityName}`,
         currency: primaryCity.currency,
         items: [
-          { label: 'Rent (1BR Center)', amount: primaryCity.rent1BRCenter || 0, currency: primaryCity.currency },
-          { label: 'Groceries', amount: primaryCity.groceries || 0, currency: primaryCity.currency },
-          { label: 'Dining Out', amount: primaryCity.dining || 0, currency: primaryCity.currency },
-          { label: 'Transportation', amount: primaryCity.transportation || 0, currency: primaryCity.currency },
-          { label: 'Utilities', amount: primaryCity.utilities || 0, currency: primaryCity.currency },
-        ].filter(i => i.amount > 0)
-      }
+          { label: 'Rent (1BR Center)', amount: primaryCity.rent1BRCenter || 0 },
+          { label: 'Groceries', amount: primaryCity.groceries || 0 },
+          { label: 'Dining Out', amount: primaryCity.dining || 0 },
+          { label: 'Transportation', amount: primaryCity.transportation || 0 },
+          { label: 'Utilities', amount: primaryCity.utilities || 0 },
+        ].filter(i => i.amount > 0),
+      },
     });
   }
 
-  // Pros & Cons
-  const pros = destination.highlights?.slice(0, 5).map(h => typeof h === 'string' ? h : h.text) || [];
-  blocks.push({
-    type: 'pros_cons',
-    props: {
-      title: 'Highlights',
-      pros,
-      cons: [
-        'Bureaucracy can be slow',
-        'Language learning may be needed',
-        'Cultural adjustment period',
-      ]
-    }
-  });
+  // === DINING GUIDE ===
+  if (destination.dining_nightlife && Object.keys(destination.dining_nightlife).length > 0) {
+    const dining = destination.dining_nightlife;
+    blocks.push({
+      type: 'restaurant',
+      props: {
+        country: destination.country_name,
+        flag: destination.flag,
+        restaurants: dining.best_restaurants || [],
+        signatureDishes: dining.signature_dishes,
+        michelinTotal: dining.michelin_stars_total,
+        avgCasual: dining.avg_meal_cost_casual_eur,
+        avgFine: dining.avg_meal_cost_fine_eur,
+        currency: '€',
+      },
+    });
+  }
 
+  // === PROS & CONS ===
+  const usp = destination.comparison_highlights?.unique_selling_points || [];
+  const highlights = destination.highlights?.slice(0, 3).map(h => typeof h === 'string' ? h : h.text) || [];
+  const pros = [...usp, ...highlights].slice(0, 5);
+
+  if (pros.length > 0) {
+    blocks.push({
+      type: 'pros_cons',
+      props: {
+        title: `Why ${destination.country_name}?`,
+        country: destination.country_name,
+        flag: destination.flag,
+        pros,
+        cons: [
+          destination.lifestyle?.english_proficiency === 'Low-Moderate' ? 'Language barrier may exist' : null,
+          'Bureaucracy can vary',
+          'Cultural adjustment period',
+          'Research healthcare options',
+        ].filter(Boolean) as string[],
+      },
+    });
+  }
+
+  // === INFO CARDS ===
+  if (destination.digital_nomad_info?.visa_available) {
+    blocks.push({
+      type: 'info_card',
+      props: {
+        title: destination.digital_nomad_info.visa_name || 'Digital Nomad Visa',
+        icon: '💻',
+        variant: 'highlight',
+        content: `Min income: €${destination.digital_nomad_info.min_income_monthly_eur?.toLocaleString()}/mo. ${destination.digital_nomad_info.coworking_scene || ''}`,
+        items: [
+          { label: 'Nomad Community', value: destination.digital_nomad_info.nomad_community_size || 'Growing' },
+        ],
+      },
+    });
+  }
+
+  if (destination.capital_overview) {
+    blocks.push({
+      type: 'info_card',
+      props: {
+        title: `Capital: ${destination.capital_overview.name}`,
+        icon: '🏛️',
+        variant: 'info',
+        content: destination.capital_overview.population
+          ? `Population: ${(destination.capital_overview.population / 1000000).toFixed(1)}M`
+          : destination.capital_overview.name,
+        items: destination.capital_overview.landmarks?.slice(0, 3).map(l => ({ label: '📍', value: l })),
+      },
+    });
+  }
 
   return {
-    title: destination.country_name,
+    title: `${destination.flag} ${destination.country_name}`,
     subtitle: destination.hero_title,
     blocks,
   };
@@ -322,6 +492,8 @@ export default function Home() {
     availableDestinations: [],
   });
   const [loading, setLoading] = useState(true);
+  const [comparingLoading, setComparingLoading] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
   const { appendMessage } = useCopilotChat();
 
   // Fetch available destinations on mount
@@ -382,8 +554,18 @@ export default function Home() {
 
         const destination = await res.json();
         const view = createDashboardView(destination);
-        setState(prev => ({ ...prev, currentDestination: undefined, customView: view }));
-        return `Showing dashboard for ${destination.country_name}.`;
+        // Set dynamic background from destination images
+        const bgImage = destination.images?.hero || destination.hero_image_url;
+        const bgGradient = destination.images?.gradient || 'from-black/70 to-black/50';
+        setState(prev => ({
+          ...prev,
+          currentDestination: undefined,
+          customView: view,
+          backgroundImage: bgImage,
+          backgroundGradient: bgGradient,
+          currentCountry: destination.country_name,
+        }));
+        return `Showing comprehensive dashboard for ${destination.country_name}.`;
       } catch (error) {
         console.error('Error fetching destination:', error);
         return `Error loading destination data. Please try again.`;
@@ -612,41 +794,168 @@ This creates dynamic, tailored visualizations based on the user's specific quest
     appendMessage(new TextMessage({ content: `Tell me about ${country}`, role: Role.User }));
   }, [appendMessage]);
 
+  // Handle comparison picker
+  const handleCompare = useCallback(async (country1: string, country2: string) => {
+    setComparingLoading(true);
+    try {
+      const slug1 = country1.toLowerCase().replace(/\s+/g, '-');
+      const slug2 = country2.toLowerCase().replace(/\s+/g, '-');
+
+      const [res1, res2] = await Promise.all([
+        fetch(`/api/destinations?slug=${slug1}`),
+        fetch(`/api/destinations?slug=${slug2}`)
+      ]);
+
+      if (res1.ok && res2.ok) {
+        const d1 = await res1.json();
+        const d2 = await res2.json();
+
+        const comparisonView: GeneratedView = {
+          title: `${d1.flag} ${d1.country_name} vs ${d2.flag} ${d2.country_name}`,
+          subtitle: 'Side-by-side comparison',
+          blocks: [
+            {
+              type: 'comparison',
+              props: {
+                countries: [d1.country_name, d2.country_name],
+                flags: [d1.flag, d2.flag],
+                items: [
+                  { label: 'Region', values: [d1.region, d2.region] },
+                  { label: 'Language', values: [d1.language, d2.language] },
+                  { label: 'Safety Index', values: [
+                    d1.quality_of_life?.safety_index?.toFixed(1) || 'N/A',
+                    d2.quality_of_life?.safety_index?.toFixed(1) || 'N/A'
+                  ]},
+                  { label: 'Quality of Life', values: [
+                    d1.quality_of_life?.overall_score?.toFixed(1) || 'N/A',
+                    d2.quality_of_life?.overall_score?.toFixed(1) || 'N/A'
+                  ]},
+                  { label: 'Rent (1BR Center)', values: [
+                    d1.cost_of_living?.[0] ? `${d1.cost_of_living[0].currency} ${d1.cost_of_living[0].rent1BRCenter?.toLocaleString()}` : 'N/A',
+                    d2.cost_of_living?.[0] ? `${d2.cost_of_living[0].currency} ${d2.cost_of_living[0].rent1BRCenter?.toLocaleString()}` : 'N/A'
+                  ]},
+                  { label: 'Digital Nomad Visa', values: [
+                    d1.digital_nomad_info?.visa_available ? `Yes (€${d1.digital_nomad_info.min_income_monthly_eur}/mo)` : 'No',
+                    d2.digital_nomad_info?.visa_available ? `Yes (€${d2.digital_nomad_info.min_income_monthly_eur}/mo)` : 'No'
+                  ]},
+                  { label: 'Climate', values: [
+                    d1.climate_data?.type || 'N/A',
+                    d2.climate_data?.type || 'N/A'
+                  ]},
+                  { label: 'Healthcare', values: [
+                    d1.healthcare?.system_type || 'N/A',
+                    d2.healthcare?.system_type || 'N/A'
+                  ]},
+                ],
+              }
+            },
+            {
+              type: 'section_header',
+              props: {
+                title: 'Quality of Life Comparison',
+                subtitle: 'Key metrics at a glance'
+              }
+            },
+            {
+              type: 'quality_of_life',
+              props: {
+                title: d1.country_name,
+                country: d1.country_name,
+                flag: d1.flag,
+                overallScore: d1.quality_of_life?.overall_score,
+                metrics: [
+                  { label: 'Safety', value: d1.quality_of_life?.safety_index || 0, icon: '🛡️' },
+                  { label: 'Cost', value: 100 - (d1.quality_of_life?.cost_of_living_index || 50), icon: '💰' },
+                  { label: 'Climate', value: d1.quality_of_life?.climate_index || 0, icon: '☀️' },
+                  { label: 'Expat', value: (d1.quality_of_life?.expat_friendly_index || 0) * 10, icon: '🌍' },
+                ].filter(m => m.value > 0),
+              }
+            },
+            {
+              type: 'quality_of_life',
+              props: {
+                title: d2.country_name,
+                country: d2.country_name,
+                flag: d2.flag,
+                overallScore: d2.quality_of_life?.overall_score,
+                metrics: [
+                  { label: 'Safety', value: d2.quality_of_life?.safety_index || 0, icon: '🛡️' },
+                  { label: 'Cost', value: 100 - (d2.quality_of_life?.cost_of_living_index || 50), icon: '💰' },
+                  { label: 'Climate', value: d2.quality_of_life?.climate_index || 0, icon: '☀️' },
+                  { label: 'Expat', value: (d2.quality_of_life?.expat_friendly_index || 0) * 10, icon: '🌍' },
+                ].filter(m => m.value > 0),
+              }
+            }
+          ]
+        };
+
+        setState(prev => ({
+          ...prev,
+          customView: comparisonView,
+          currentDestination: undefined,
+        }));
+      }
+    } catch (error) {
+      console.error('Error comparing countries:', error);
+    } finally {
+      setComparingLoading(false);
+    }
+  }, []);
+
+  // Handle country selection from force graph
+  const handleGraphCountrySelect = useCallback((country: { country_name: string }) => {
+    appendMessage(new TextMessage({ content: `Tell me about ${country.country_name}`, role: Role.User }));
+  }, [appendMessage]);
+
   // Available country names for instructions
   const availableCountries = state.availableDestinations
     .map(d => d.country_name)
     .join(', ') || 'Loading...';
 
+  // Dynamic background based on selected country - always use hero image
+  const backgroundUrl = state.backgroundImage || 'https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=2670&auto=format&fit=crop';
+
   return (
     <div
-      className="min-h-screen bg-cover bg-center text-white"
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1539635278303-d4002c07eae3?q=80&w=2670&auto=format&fit=crop')" }}
+      className="min-h-screen bg-cover bg-center bg-fixed text-white transition-all duration-1000"
+      style={{ backgroundImage: `url('${backgroundUrl}')` }}
     >
-      <div className="min-h-screen bg-black/60">
+      {/* Dark overlay for readability - always dark, not colored */}
+      <div className="min-h-screen bg-black/60 backdrop-blur-[2px]">
         <CopilotSidebar
           defaultOpen={true}
-          instructions={`You are ATLAS, a warm and knowledgeable relocation advisor.
+          instructions={`You are ATLAS, a warm and knowledgeable relocation advisor with access to comprehensive data on ${availableCountries}.
+
+YOU HAVE EXTENSIVE DATA including: climate info, cost of living, visa requirements, digital nomad programs, healthcare systems, tax regimes, dining/nightlife, quality of life scores, and relocation timelines for each country.
 
 CRITICAL RULES:
 
-1. SINGLE DESTINATION: When a user mentions ONE country, call show_destination:
-   - User: "Tell me about Portugal" → show_destination(country: "Portugal")
+1. SINGLE DESTINATION: When a user mentions ONE country, ALWAYS call show_destination:
+   - User: "Tell me about Cyprus" → show_destination(country: "Cyprus")
+   - User: "What do you know about Portugal?" → show_destination(country: "Portugal")
+   This displays a comprehensive dashboard with timeline, climate, dining, quality of life, and more.
 
-2. COMPARISONS: When user wants to COMPARE countries, call generate_custom_view:
-   - User: "Compare Portugal vs Spain" → generate_custom_view(view_type: "comparison", countries: "Portugal, Spain", focus: "all")
-   - User: "Which is cheaper, Thailand or Vietnam?" → generate_custom_view(view_type: "comparison", countries: "Thailand, Vietnam", focus: "cost")
+2. COMPARISONS: When user wants to COMPARE countries:
+   - User: "Compare Cyprus vs Malta" → generate_custom_view(view_type: "comparison", countries: "Cyprus, Malta", focus: "all")
 
-3. COST BREAKDOWN: When user asks about costs in detail:
+3. COST BREAKDOWN: When user asks about costs:
    - User: "Show me cost breakdown for Lisbon" → generate_custom_view(view_type: "cost_breakdown", countries: "Portugal", focus: "cost")
 
 4. PROS & CONS: When user asks about advantages/disadvantages:
-   - User: "What are pros and cons of moving to Spain?" → generate_custom_view(view_type: "pros_cons", countries: "Spain", focus: "lifestyle")
+   - User: "Pros and cons of Spain?" → generate_custom_view(view_type: "pros_cons", countries: "Spain", focus: "lifestyle")
 
 5. PREFERENCES: Call save_preferences when users mention budget, climate, or purpose.
 
-Be conversational and helpful. Keep responses to 2-3 sentences. After showing content, ask a follow-up question.
+DATA AVAILABLE FOR EACH COUNTRY:
+- Climate: seasons, temperatures, sunshine hours, best months to visit
+- Cost of Living: rent, groceries, dining, transportation, utilities
+- Digital Nomad: visa requirements, income thresholds, coworking scene
+- Healthcare: system type, quality ratings, insurance costs
+- Dining: Michelin stars, signature dishes, best restaurants
+- Quality of Life: safety index, expat friendliness, climate rating
+- Relocation Timeline: step-by-step guide with resources and links
 
-Available countries: ${availableCountries}`}
+Be conversational and helpful. After showing a dashboard, point out specific interesting data points.`}
           labels={{
             title: 'Chat with ATLAS',
             initial: "Hello! I'm ATLAS, your AI relocation advisor. I can help you explore destinations worldwide with real data on visas, costs, and more.\n\nClick a destination below or tell me what you're looking for!",
@@ -667,10 +976,39 @@ Available countries: ${availableCountries}`}
                 </h1>
                 <p className="text-white/80 text-lg">Your AI-powered guide to a new life abroad</p>
 
-                {/* Voice Widget - Bottom left of hero */}
-                <div className="absolute -bottom-16 left-0">
+                {/* Voice Widget - Centered below title */}
+                <div className="mt-8 flex justify-center">
                   <HumeWidget />
                 </div>
+
+                {/* Action Toolbar */}
+                {!loading && state.availableDestinations.length > 0 && (
+                  <div className="mt-8 flex justify-center gap-3">
+                    <ComparisonPicker
+                      countries={state.availableDestinations.map(d => ({
+                        slug: d.slug,
+                        country_name: d.country_name,
+                        flag: d.flag,
+                        region: d.region,
+                      }))}
+                      onCompare={handleCompare}
+                      isLoading={comparingLoading}
+                    />
+                    <button
+                      onClick={() => setShowGraph(!showGraph)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all border ${
+                        showGraph
+                          ? 'bg-cyan-500/30 text-cyan-300 border-cyan-500/50'
+                          : 'bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 border-cyan-500/30'
+                      }`}
+                    >
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                      {showGraph ? 'Hide Graph' : 'Explore Connections'}
+                    </button>
+                  </div>
+                )}
               </motion.header>
 
               {/* User Preferences */}
@@ -698,7 +1036,29 @@ Available countries: ${availableCountries}`}
                 </motion.div>
               )}
 
-                          {/* Dynamic View, Destination Card, or Empty State */}
+              {/* Force Graph Visualization */}
+              {showGraph && state.availableDestinations.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-8"
+                >
+                  <CountryForceGraph
+                    countries={state.availableDestinations.map(d => ({
+                      slug: d.slug,
+                      country_name: d.country_name,
+                      flag: d.flag,
+                      region: d.region,
+                      similar_to: d.comparison_highlights?.similar_to,
+                    }))}
+                    onSelectCountry={handleGraphCountrySelect}
+                    highlightedCountry={state.currentCountry?.toLowerCase().replace(/\s+/g, '-')}
+                  />
+                </motion.div>
+              )}
+
+              {/* Dynamic View, Destination Card, or Empty State */}
                           {loading ? (
                             <LoadingSkeleton />
                           ) : state.customView ? (

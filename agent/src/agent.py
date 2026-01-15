@@ -943,6 +943,221 @@ async def get_current_user_name(ctx: RunContext[ATLASDeps]) -> dict:
 
 
 @agent.tool
+async def get_user_profile(ctx: RunContext[ATLASDeps]) -> dict:
+    """
+    Get the user's complete relocation profile from memory.
+
+    Use this when:
+    - User asks "what do you know about me"
+    - User asks "what are my preferences"
+    - You need to personalize recommendations
+    - Starting a new session to recall previous context
+
+    Returns their current location, preferred destinations, budget, timeline, etc.
+    """
+    user_id = ctx.deps.user_id or _current_user_context.get("user_id")
+    user_name = ctx.deps.user_name or _current_user_context.get("user_name")
+
+    if not user_id:
+        return {
+            "found": False,
+            "message": "I don't have your profile yet. Tell me about yourself - where are you based, and where are you thinking of moving?",
+            "profile": {}
+        }
+
+    # Get from Zep memory
+    memory = await get_user_memory(user_id)
+
+    profile = {
+        "name": user_name or memory.get("user_name"),
+        "current_location": None,
+        "preferred_destinations": [],
+        "budget": None,
+        "timeline": None,
+        "purpose": None,
+        "visa_interest": None,
+        "family_status": None,
+    }
+
+    # Parse facts to extract structured profile data
+    for fact in memory.get("facts", []):
+        lower = fact.lower()
+
+        # Current location
+        if "based in" in lower or "live in" in lower or "from" in lower:
+            for loc in ["london", "manchester", "new york", "berlin", "paris", "sydney", "toronto", "dublin"]:
+                if loc in lower:
+                    profile["current_location"] = loc.title()
+                    break
+
+        # Preferred destinations
+        if "interested in" in lower or "considering" in lower or "want to move to" in lower or "relocate to" in lower:
+            for dest in ["portugal", "spain", "cyprus", "thailand", "bali", "dubai", "malta", "mexico", "greece", "italy", "netherlands", "france", "germany", "australia", "new zealand", "canada", "uk"]:
+                if dest in lower and dest.title() not in profile["preferred_destinations"]:
+                    profile["preferred_destinations"].append(dest.title())
+
+        # Budget
+        if "budget" in lower or "€" in fact or "$" in fact or "£" in fact:
+            profile["budget"] = fact
+
+        # Timeline
+        if "month" in lower or "year" in lower or "soon" in lower or "planning" in lower:
+            if any(w in lower for w in ["next", "within", "by", "before"]):
+                profile["timeline"] = fact
+
+        # Purpose
+        if any(p in lower for p in ["remote work", "digital nomad", "retire", "adventure", "tax", "business"]):
+            profile["purpose"] = fact
+
+    is_returning = memory.get("is_returning", False)
+    fact_count = len(memory.get("facts", []))
+
+    return {
+        "found": True,
+        "is_returning_user": is_returning,
+        "fact_count": fact_count,
+        "profile": profile,
+        "response_hint": f"User profile loaded. {'Welcome back!' if is_returning else 'New user - gather their preferences.'}"
+    }
+
+
+@agent.tool
+async def save_user_preference(ctx: RunContext[ATLASDeps], preference_type: str, value: str) -> dict:
+    """
+    Save a user preference to their profile.
+
+    WHEN TO USE:
+    - User shares their current location: "I'm based in London"
+    - User shares budget: "I have €2000/month"
+    - User shares timeline: "I want to move within 6 months"
+    - User shares purpose: "I'm looking for a digital nomad visa"
+    - User shares family status: "I'm moving with my partner"
+
+    DO NOT USE FOR:
+    - Preferred destinations (use add_preferred_destination instead)
+    - User's name (already tracked separately)
+
+    Args:
+        preference_type: One of 'current_location', 'budget', 'timeline', 'purpose', 'visa_interest', 'family_status'
+        value: The value to save (e.g., "London", "€2000/month", "6 months")
+
+    Examples:
+    - "I'm in London" → save_user_preference("current_location", "London")
+    - "Budget is €2500" → save_user_preference("budget", "€2500/month")
+    - "Digital nomad visa" → save_user_preference("visa_interest", "digital nomad")
+    """
+    user_id = ctx.deps.user_id or _current_user_context.get("user_id")
+
+    if not user_id:
+        return {
+            "saved": False,
+            "message": "I can't save preferences without knowing who you are. Could you tell me your name?"
+        }
+
+    valid_types = ["current_location", "budget", "timeline", "purpose", "visa_interest", "family_status"]
+    if preference_type not in valid_types:
+        return {
+            "saved": False,
+            "message": f"Unknown preference type. Use one of: {', '.join(valid_types)}"
+        }
+
+    # Store to Zep memory with structured fact
+    fact = f"User's {preference_type.replace('_', ' ')} is {value}"
+    success = await store_to_memory(user_id, fact, role="system")
+
+    print(f"💾 [ATLAS] Saved preference: {preference_type}={value} for user {user_id}", file=sys.stderr)
+
+    return {
+        "saved": success,
+        "preference_type": preference_type,
+        "value": value,
+        "message": f"Got it! I've noted your {preference_type.replace('_', ' ')}: {value}"
+    }
+
+
+@agent.tool
+async def add_preferred_destination(ctx: RunContext[ATLASDeps], destination: str, reason: str = "") -> dict:
+    """
+    Add a destination to the user's list of places they're considering.
+
+    Users can have MULTIPLE preferred destinations. Use this whenever they mention
+    a country or city they're interested in relocating to.
+
+    WHEN TO USE:
+    - "I'm thinking about Portugal" → add_preferred_destination("Portugal", "considering")
+    - "Spain looks interesting too" → add_preferred_destination("Spain", "interested")
+    - "I've always wanted to live in Bali" → add_preferred_destination("Bali", "dream destination")
+
+    Args:
+        destination: The country or city name (e.g., "Portugal", "Lisbon", "Bali")
+        reason: Why they're interested (optional, e.g., "digital nomad visa", "low cost of living")
+    """
+    user_id = ctx.deps.user_id or _current_user_context.get("user_id")
+
+    if not user_id:
+        return {
+            "saved": False,
+            "message": "Tell me your name first so I can remember your preferences!"
+        }
+
+    # Normalize destination name
+    destination = destination.strip().title()
+
+    # Store as structured fact
+    if reason:
+        fact = f"User is interested in relocating to {destination} ({reason})"
+    else:
+        fact = f"User is considering {destination} as a potential relocation destination"
+
+    success = await store_to_memory(user_id, fact, role="system")
+
+    print(f"🌍 [ATLAS] Added preferred destination: {destination} for user {user_id}", file=sys.stderr)
+
+    return {
+        "saved": success,
+        "destination": destination,
+        "reason": reason,
+        "message": f"Added {destination} to your list! {'(' + reason + ')' if reason else ''} Would you like me to tell you more about it?"
+    }
+
+
+@agent.tool
+async def save_user_name(ctx: RunContext[ATLASDeps], name: str) -> dict:
+    """
+    Save the user's name when they introduce themselves.
+
+    Use this when:
+    - User says "I'm Dan" or "My name is Sarah"
+    - User says "Call me Mike"
+
+    Args:
+        name: The user's name
+    """
+    user_id = ctx.deps.user_id or _current_user_context.get("user_id")
+
+    if not user_id:
+        # Generate a session-based ID if we don't have one
+        user_id = f"session_{uuid.uuid4().hex[:8]}"
+
+    # Store name in Zep
+    fact = f"User's name is {name}"
+    success = await store_to_memory(user_id, fact, role="system")
+
+    # Also update global context
+    global _current_user_context
+    _current_user_context["user_name"] = name
+    _current_user_context["user_id"] = user_id
+
+    print(f"👤 [ATLAS] Saved user name: {name} (id: {user_id})", file=sys.stderr)
+
+    return {
+        "saved": success,
+        "name": name,
+        "message": f"Nice to meet you, {name}! I'll remember that. Now, where are you based, and where are you thinking of relocating?"
+    }
+
+
+@agent.tool
 async def delegate_to_destination_expert(ctx: RunContext[ATLASDeps], request: str) -> dict:
     """
     Delegate to the Destination Expert for research materials.

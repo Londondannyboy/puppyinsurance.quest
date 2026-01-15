@@ -1,11 +1,33 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ComparisonTable, CostChart, ProsCons, InfoCard, KPI } from './mdx';
+import {
+  ComparisonTable,
+  CostChart,
+  ProsCons,
+  InfoCard,
+  KPI,
+  RelocationTimeline,
+  ClimateChart,
+  RestaurantGuide,
+  QualityOfLifeRadar,
+} from './mdx';
 
 // Types for AI-generated views
 export interface ViewBlock {
-  type: 'comparison' | 'cost_chart' | 'pros_cons' | 'info_card' | 'text' | 'heading' | 'kpi';
+  type:
+    | 'comparison'
+    | 'cost_chart'
+    | 'pros_cons'
+    | 'info_card'
+    | 'text'
+    | 'heading'
+    | 'kpi'
+    | 'timeline'
+    | 'climate'
+    | 'restaurant'
+    | 'quality_of_life'
+    | 'section_header';
   props: Record<string, unknown>;
 }
 
@@ -44,7 +66,7 @@ export function DynamicView({ view }: DynamicViewProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className={`${block.type === 'comparison' || block.type === 'cost_chart' || block.type === 'pros_cons' ? 'lg:col-span-3' : 'lg:col-span-1'}`}
+            className={getBlockColSpan(block.type)}
           >
             {renderBlock(block)}
           </motion.div>
@@ -52,6 +74,24 @@ export function DynamicView({ view }: DynamicViewProps) {
       </div>
     </motion.div>
   );
+}
+
+function getBlockColSpan(type: ViewBlock['type']): string {
+  // Full-width blocks
+  const fullWidthBlocks = [
+    'comparison',
+    'cost_chart',
+    'pros_cons',
+    'timeline',
+    'section_header',
+  ];
+
+  // Half-width blocks
+  const halfWidthBlocks = ['climate', 'restaurant', 'quality_of_life'];
+
+  if (fullWidthBlocks.includes(type)) return 'lg:col-span-3';
+  if (halfWidthBlocks.includes(type)) return 'lg:col-span-2 md:col-span-2';
+  return 'lg:col-span-1';
 }
 
 function renderBlock(block: ViewBlock) {
@@ -64,14 +104,21 @@ function renderBlock(block: ViewBlock) {
           icon={block.props.icon as string}
         />
       );
+
     case 'comparison':
       return (
         <ComparisonTable
           title={block.props.title as string}
-          countries={block.props.countries as string[]}
-          flags={block.props.flags as string[]}
-          items={block.props.items as Array<{ label: string; values: string[] }>}
-          highlight={block.props.highlight as string}
+          countries={block.props.countries as [string, string]}
+          flags={block.props.flags as [string, string]}
+          items={
+            block.props.items as Array<{
+              label: string;
+              values: [string | number, string | number];
+              highlight?: boolean;
+              better?: 0 | 1;
+            }>
+          }
         />
       );
 
@@ -79,10 +126,17 @@ function renderBlock(block: ViewBlock) {
       return (
         <CostChart
           title={block.props.title as string}
-          subtitle={block.props.subtitle as string}
-          items={block.props.items as Array<{ label: string; amount: number; currency: string }>}
+          items={
+            block.props.items as Array<{
+              label: string;
+              amount: number;
+              currency?: string;
+              color?: string;
+            }>
+          }
           total={block.props.total as number}
           currency={block.props.currency as string}
+          showPercentage={block.props.showPercentage as boolean}
         />
       );
 
@@ -92,6 +146,8 @@ function renderBlock(block: ViewBlock) {
           title={block.props.title as string}
           pros={block.props.pros as string[]}
           cons={block.props.cons as string[]}
+          country={block.props.country as string}
+          flag={block.props.flag as string}
         />
       );
 
@@ -99,11 +155,111 @@ function renderBlock(block: ViewBlock) {
       return (
         <InfoCard
           title={block.props.title as string}
+          content={block.props.content as string}
           icon={block.props.icon as string}
-          variant={block.props.variant as 'default' | 'highlight' | 'warning' | 'success'}
-        >
-          {block.props.content as string}
-        </InfoCard>
+          variant={
+            block.props.variant as
+              | 'default'
+              | 'highlight'
+              | 'warning'
+              | 'success'
+              | 'info'
+          }
+          items={block.props.items as Array<{ label: string; value: string }>}
+        />
+      );
+
+    case 'timeline':
+      return (
+        <RelocationTimeline
+          country={block.props.country as string}
+          flag={block.props.flag as string}
+          relocationType={
+            block.props.relocationType as
+              | 'digital_nomad'
+              | 'hnwi'
+              | 'company'
+          }
+          familyStatus={
+            block.props.familyStatus as 'single' | 'with_family'
+          }
+        />
+      );
+
+    case 'climate':
+      return (
+        <ClimateChart
+          type={block.props.type as string}
+          annualSunshineHours={block.props.annualSunshineHours as number}
+          seasons={
+            block.props.seasons as Record<
+              string,
+              {
+                months: string[];
+                temp_avg_c: number;
+                temp_min_c?: number;
+                description: string;
+              }
+            >
+          }
+          bestMonths={block.props.bestMonths as string[]}
+          rating={block.props.rating as number}
+          humidity={block.props.humidity as number}
+        />
+      );
+
+    case 'restaurant':
+      return (
+        <RestaurantGuide
+          title={block.props.title as string}
+          country={block.props.country as string}
+          flag={block.props.flag as string}
+          restaurants={
+            block.props.restaurants as Array<{
+              name: string;
+              city: string;
+              cuisine: string;
+              price: string;
+              michelin?: number;
+            }>
+          }
+          signatureDishes={block.props.signatureDishes as string[]}
+          michelinTotal={block.props.michelinTotal as number}
+          avgCasual={block.props.avgCasual as number}
+          avgFine={block.props.avgFine as number}
+          currency={block.props.currency as string}
+        />
+      );
+
+    case 'quality_of_life':
+      return (
+        <QualityOfLifeRadar
+          title={block.props.title as string}
+          country={block.props.country as string}
+          flag={block.props.flag as string}
+          metrics={
+            block.props.metrics as Array<{
+              label: string;
+              value: number;
+              maxValue?: number;
+              icon?: string;
+            }>
+          }
+          overallScore={block.props.overallScore as number}
+        />
+      );
+
+    case 'section_header':
+      return (
+        <div className="py-4 border-b border-white/10">
+          <h3 className="text-xl font-semibold text-amber-400">
+            {block.props.icon ? <span className="mr-2">{String(block.props.icon)}</span> : null}
+            {String(block.props.text)}
+          </h3>
+          {block.props.subtitle ? (
+            <p className="text-sm text-white/60 mt-1">{String(block.props.subtitle)}</p>
+          ) : null}
+        </div>
       );
 
     case 'heading':
