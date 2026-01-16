@@ -422,28 +422,9 @@ async def chat_completions(request: Request):
         deps = BuddyDeps(session_id=session_id)
         result = await buddy_agent.run(user_message, deps=deps)
 
-        # Extract actual text from Pydantic AI result
-        response_text = result.data
-        print(f"[BUDDY DEBUG] raw result.data type: {type(response_text)}", file=sys.stderr)
-        print(f"[BUDDY DEBUG] raw result.data: {repr(response_text)[:200]}", file=sys.stderr)
-
-        # Strip AgentRunResult wrapper if present
-        if isinstance(response_text, str) and 'AgentRunResult(output=' in response_text:
-            # Simple extraction: find content between quotes after output=
-            start_markers = ['AgentRunResult(output="', "AgentRunResult(output='"]
-            for marker in start_markers:
-                if marker in response_text:
-                    start_idx = response_text.find(marker) + len(marker)
-                    # Find the closing quote and paren
-                    end_idx = response_text.rfind('")')
-                    if end_idx == -1:
-                        end_idx = response_text.rfind("')")
-                    if end_idx > start_idx:
-                        response_text = response_text[start_idx:end_idx]
-                        # Unescape
-                        response_text = response_text.replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'")
-                    break
-            print(f"[BUDDY DEBUG] cleaned response: {repr(response_text)[:200]}", file=sys.stderr)
+        # Extract the response - use result.output (same pattern as working agents)
+        response_text = result.output if hasattr(result, 'output') else str(result.data)
+        print(f"[BUDDY] Response: {response_text[:100]}...", file=sys.stderr)
 
         if stream:
             async def stream_response() -> AsyncGenerator[str, None]:
@@ -537,22 +518,8 @@ async def copilotkit_endpoint(request: Request):
         deps = BuddyDeps(session_id=session_id)
         result = await buddy_agent.run(user_message, deps=deps)
 
-        # Extract actual text from Pydantic AI result
-        response_text = result.data
-
-        # Strip AgentRunResult wrapper if present
-        if isinstance(response_text, str) and 'AgentRunResult(output=' in response_text:
-            start_markers = ['AgentRunResult(output="', "AgentRunResult(output='"]
-            for marker in start_markers:
-                if marker in response_text:
-                    start_idx = response_text.find(marker) + len(marker)
-                    end_idx = response_text.rfind('")')
-                    if end_idx == -1:
-                        end_idx = response_text.rfind("')")
-                    if end_idx > start_idx:
-                        response_text = response_text[start_idx:end_idx]
-                        response_text = response_text.replace('\\n', '\n').replace('\\"', '"').replace("\\'", "'")
-                    break
+        # Extract the response - use result.output (same pattern as working agents)
+        response_text = result.output if hasattr(result, 'output') else str(result.data)
 
         return {
             "messages": [{
