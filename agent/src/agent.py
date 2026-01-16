@@ -188,6 +188,12 @@ When discussing breeds, share relevant health info:
 - NEVER say "As a language model" or "I'm an AI"
 - If asked who you are: "I'm Buddy, your friendly puppy insurance advisor! Woof!"
 
+## USER PERSONALIZATION
+- If the user's name is provided in [brackets] at the start of their message, USE IT naturally
+- Greet returning users by name: "Hey [Name]! Great to hear from you again!"
+- Use their name occasionally but not excessively (every 2-3 exchanges is good)
+- If you learn new info about their dog, acknowledge it warmly
+
 ## PHONETIC CORRECTIONS (voice transcription)
 - "lab/labrador/lab retriever" -> Labrador Retriever
 - "golden/golden retriever" -> Golden Retriever
@@ -394,6 +400,52 @@ async def root():
 
 
 # =============================================================================
+# SESSION/USER EXTRACTION HELPERS
+# =============================================================================
+
+def extract_session_id(request: Request, body: dict) -> Optional[str]:
+    """Extract custom_session_id from Hume request."""
+    # Check body fields (Hume forwards session settings here)
+    session_id = body.get("custom_session_id") or body.get("customSessionId")
+    if session_id:
+        return session_id
+
+    # Check session_settings (Hume may forward this)
+    session_settings = body.get("session_settings", {})
+    if session_settings:
+        session_id = session_settings.get("customSessionId") or session_settings.get("custom_session_id")
+        if session_id:
+            return session_id
+
+    # Check metadata
+    metadata = body.get("metadata", {})
+    if metadata:
+        session_id = metadata.get("customSessionId") or metadata.get("custom_session_id")
+        if session_id:
+            return session_id
+
+    # Check headers
+    for header in ["x-custom-session-id", "x-hume-custom-session-id"]:
+        session_id = request.headers.get(header)
+        if session_id:
+            return session_id
+
+    return None
+
+
+def extract_user_from_session(session_id: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+    """Extract user_name and user_id from session_id. Format: 'name|userId'"""
+    if not session_id or '|' not in session_id:
+        return None, None
+
+    parts = session_id.split('|')
+    user_name = parts[0] if parts[0] and parts[0].lower() != 'user' else None
+    user_id = parts[1] if len(parts) > 1 else None
+
+    return user_name, user_id
+
+
+# =============================================================================
 # OPENAI-COMPATIBLE ENDPOINT (FOR HUME EVI)
 # =============================================================================
 
@@ -405,6 +457,13 @@ async def chat_completions(request: Request):
         messages = body.get("messages", [])
         stream = body.get("stream", True)
 
+        # Extract session ID (from Hume's customSessionId)
+        session_id = extract_session_id(request, body)
+
+        # Extract user info from session ID (format: "name|userId")
+        user_name, user_id = extract_user_from_session(session_id)
+        print(f"[BUDDY] Session: {session_id}, User: {user_name}, ID: {user_id}", file=sys.stderr)
+
         # Extract user message
         user_message = ""
         for msg in reversed(messages):
@@ -415,12 +474,20 @@ async def chat_completions(request: Request):
         if not user_message:
             user_message = "Hello!"
 
-        # Generate session ID
-        session_id = str(uuid.uuid4())
+        # Update session context with user name
+        if session_id:
+            ctx = get_session_context(session_id)
+            if user_name and not ctx.user_name:
+                ctx.user_name = user_name
+
+        # Build personalized prompt if we have user name
+        prompt = user_message
+        if user_name:
+            prompt = f"[User's name is {user_name}] {user_message}"
 
         # Run agent
-        deps = BuddyDeps(session_id=session_id)
-        result = await buddy_agent.run(user_message, deps=deps)
+        deps = BuddyDeps(session_id=session_id or str(uuid.uuid4()), user_id=user_id)
+        result = await buddy_agent.run(prompt, deps=deps)
 
         # Extract the response - use result.output (same pattern as working agents)
         response_text = result.output if hasattr(result, 'output') else str(result.data)
