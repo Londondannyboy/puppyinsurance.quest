@@ -262,14 +262,14 @@ Country content in `scripts/data/<country>.js`. Cyprus is the template.
 ## Known Issues / TODO
 
 ### High Priority
-- [ ] **No Unsplash API key** - Add `UNSPLASH_ACCESS_KEY` to .env.local for dynamic images
-- [ ] **CopilotKit sidebar needs interactive updates** - When user chats, sidebar should show graphs/visualizations
-- [ ] **Agent doesn't know user name** - Need to pass user profile to CopilotKit context properly
-- [ ] **No Zep integration** - Memory layer not connected
+- [x] **No Unsplash API key** - Added `UNSPLASH_ACCESS_KEY` to .env.local ✅
+- [x] **CopilotKit sidebar needs interactive updates** - Added useRenderToolCall hooks for visualizations ✅
+- [x] **Agent doesn't know user name** - Added Zep memory + user context in instructions ✅
+- [x] **No Zep integration** - Created /api/zep/user route and useZepMemory hook ✅
 - [ ] **Pydantic AI agent not deployed** - Railway agent needs setup for this project
 
 ### Medium Priority
-- [ ] Improve visualizations (refer to fractional.quest pattern)
+- [x] Improve visualizations (refer to fractional.quest pattern) - Added 4 visualization tools ✅
 - [ ] Port full legacy Cyprus content
 - [ ] Add more destination fallback images
 
@@ -279,7 +279,38 @@ Country content in `scripts/data/<country>.js`. Cyprus is the template.
 
 | Project | Pattern |
 |---------|---------|
-| `fractional.quest` | Good example of CopilotKit + sidebar visualizations |
+| `fractional.quest` | useRenderToolCall for sidebar visualizations |
+| `lost.london-v2` | Zep memory integration, personalized instructions |
+
+---
+
+## Phase 8: Sidebar Visualizations & Zep Memory
+
+**Goal**: Interactive sidebar that updates with charts when user chats + persistent memory.
+
+### New Files
+
+| File | Purpose |
+|------|---------|
+| `/api/zep/user` | Zep memory CRUD - users, threads, facts |
+| `/hooks/useZepMemory.ts` | React hook for Zep memory state |
+
+### useRenderToolCall Hooks (DestinationClient)
+
+| Tool Name | Visualization |
+|-----------|---------------|
+| `show_cost_breakdown` | CostChart with animated bars |
+| `show_quality_of_life` | QualityOfLifeRadar metrics |
+| `show_comparison` | ComparisonTable side-by-side |
+| `show_pros_cons` | ProsCons two-column layout |
+
+### Personalized Instructions
+
+CopilotSidebar now includes:
+- User name from Zep memory
+- Returning user detection
+- User facts/preferences from graph
+- Instructions to use visualization tools
 
 ---
 
@@ -299,3 +330,14 @@ Country content in `scripts/data/<country>.js`. Cyprus is the template.
 - Added VoiceChatSync for voice-chat integration
 - Added static fallback images for Cyprus (no Unsplash key)
 - Fixed navbar visibility (solid dark background)
+
+### Jan 16, 2026 (Session 3)
+- **Zep Integration**: Created /api/zep/user route with Zep Cloud SDK v3
+- **Memory Hook**: Added useZepMemory hook for user context
+- **Visualization Tools**: Added 4 useRenderToolCall hooks:
+  - show_cost_breakdown → CostChart
+  - show_quality_of_life → QualityOfLifeRadar
+  - show_comparison → ComparisonTable
+  - show_pros_cons → ProsCons
+- **Personalized AI**: CopilotSidebar now passes user context to instructions
+- **Pattern Reference**: Following fractional.quest + lost.london-v2 patterns

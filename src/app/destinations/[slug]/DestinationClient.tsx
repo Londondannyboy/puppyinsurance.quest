@@ -3,11 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { CopilotSidebar } from '@copilotkit/react-ui';
-import { useCopilotReadable } from '@copilotkit/react-core';
+import { useCopilotReadable, useRenderToolCall } from '@copilotkit/react-core';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageContextProvider, VoiceChatProvider, SyncedVoiceButton } from '@/components/voice';
 import { CostChart } from '@/components/mdx/CostChart';
 import { QualityOfLifeRadar } from '@/components/mdx/QualityOfLifeRadar';
+import { ComparisonTable } from '@/components/mdx/ComparisonTable';
+import { ProsCons } from '@/components/mdx/ProsCons';
+import { useZepMemory } from '@/hooks/useZepMemory';
 
 // Types
 interface QuickFact {
@@ -350,6 +353,12 @@ export default function DestinationClient({ slug, destination }: DestinationClie
     });
   }, [destination.country_name, destination.hero_image_url, destination.cost_of_living, slug, fallbackData]);
 
+  // Zep memory for user context (use null for demo, would normally come from auth)
+  const demoUserId = typeof window !== 'undefined'
+    ? localStorage.getItem('demo_user_id') || null
+    : null;
+  const { user: zepUser, facts: userFacts, buildContext, isReturningUser } = useZepMemory(demoUserId);
+
   // Make destination data readable to CopilotKit
   useCopilotReadable({
     description: `Full destination data for ${destination.country_name}`,
@@ -363,6 +372,188 @@ export default function DestinationClient({ slug, destination }: DestinationClie
       faqs: destination.faqs,
     },
   });
+
+  // Tool call renders for visualizations in sidebar
+  useRenderToolCall({
+    name: 'show_cost_breakdown',
+    description: 'Display an interactive cost breakdown chart for the destination',
+    parameters: [
+      { name: 'items', type: 'object[]', description: 'Array of cost items with label and amount' },
+      { name: 'title', type: 'string', description: 'Chart title' },
+      { name: 'currency', type: 'string', description: 'Currency symbol', required: false },
+    ],
+    render: ({ status, args }) => {
+      if (status === 'inProgress') {
+        return (
+          <div className="p-4 animate-pulse">
+            <div className="h-6 bg-white/10 rounded w-1/2 mb-4" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-8 bg-white/10 rounded" />
+              ))}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div className="p-4">
+          <CostChart
+            title={args.title || 'Monthly Costs'}
+            items={args.items || []}
+            currency={args.currency || '€'}
+          />
+        </div>
+      );
+    },
+  }, []);
+
+  useRenderToolCall({
+    name: 'show_quality_of_life',
+    description: 'Display quality of life metrics for the destination',
+    parameters: [
+      { name: 'metrics', type: 'object[]', description: 'Array of metrics with label, value, and icon' },
+      { name: 'overallScore', type: 'number', description: 'Overall QoL score' },
+    ],
+    render: ({ status, args }) => {
+      if (status === 'inProgress') {
+        return (
+          <div className="p-4 animate-pulse">
+            <div className="h-6 bg-white/10 rounded w-1/2 mb-4" />
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-6 bg-white/10 rounded" />
+              ))}
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div className="p-4">
+          <QualityOfLifeRadar
+            title="Quality of Life"
+            country={destination.country_name}
+            flag={destination.flag}
+            metrics={args.metrics || []}
+            overallScore={args.overallScore || 75}
+          />
+        </div>
+      );
+    },
+  }, [destination.country_name, destination.flag]);
+
+  useRenderToolCall({
+    name: 'show_comparison',
+    description: 'Display a comparison table between two destinations',
+    parameters: [
+      { name: 'title', type: 'string', description: 'Comparison title' },
+      { name: 'country1', type: 'string', description: 'First country name' },
+      { name: 'country2', type: 'string', description: 'Second country name' },
+      { name: 'flag1', type: 'string', description: 'First country flag emoji', required: false },
+      { name: 'flag2', type: 'string', description: 'Second country flag emoji', required: false },
+      { name: 'items', type: 'object[]', description: 'Comparison items with label, values array, and optional better indicator (0 or 1)' },
+    ],
+    render: ({ status, args }) => {
+      if (status === 'inProgress') {
+        return (
+          <div className="p-4 animate-pulse">
+            <div className="h-6 bg-white/10 rounded w-1/2 mb-4" />
+            <div className="h-32 bg-white/10 rounded" />
+          </div>
+        );
+      }
+      const countries: [string, string] = [args.country1 || 'Country A', args.country2 || 'Country B'];
+      const flags: [string, string] | undefined = args.flag1 && args.flag2
+        ? [args.flag1, args.flag2]
+        : undefined;
+      return (
+        <div className="p-4">
+          <ComparisonTable
+            title={args.title || 'Comparison'}
+            countries={countries}
+            flags={flags}
+            items={args.items || []}
+          />
+        </div>
+      );
+    },
+  }, []);
+
+  useRenderToolCall({
+    name: 'show_pros_cons',
+    description: 'Display pros and cons for a destination',
+    parameters: [
+      { name: 'title', type: 'string', description: 'Title for the pros/cons' },
+      { name: 'pros', type: 'string[]', description: 'List of advantages' },
+      { name: 'cons', type: 'string[]', description: 'List of disadvantages' },
+    ],
+    render: ({ status, args }) => {
+      if (status === 'inProgress') {
+        return (
+          <div className="p-4 animate-pulse">
+            <div className="h-6 bg-white/10 rounded w-1/2 mb-4" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-4 bg-emerald-500/20 rounded" />
+                ))}
+              </div>
+              <div className="space-y-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-4 bg-rose-500/20 rounded" />
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      }
+      return (
+        <div className="p-4">
+          <ProsCons
+            title={args.title || `${destination.country_name} - Pros & Cons`}
+            pros={args.pros || []}
+            cons={args.cons || []}
+          />
+        </div>
+      );
+    },
+  }, [destination.country_name]);
+
+  // Build personalized instructions for CopilotKit
+  const userContext = buildContext();
+  const userName = zepUser?.firstName || (isReturningUser ? 'valued user' : null);
+  const personalizedInstructions = `You are ATLAS, an expert relocation advisor for ${destination.country_name}.
+
+${userName ? `## USER CONTEXT
+- Name: ${userName}
+- Status: ${isReturningUser ? 'Returning user - greet them warmly by name' : 'New user'}
+${userContext ? `- Known Preferences: ${userContext}` : ''}
+
+Always address the user by name when appropriate.
+` : ''}
+## YOUR CAPABILITIES
+You can help with:
+- Visa options and requirements
+- Cost of living breakdown
+- Best cities to live in
+- Job market insights
+- Tax benefits and planning
+- Lifestyle and culture
+
+## VISUALIZATION TOOLS
+When providing data, USE these tools to display visual charts:
+- show_cost_breakdown: Display cost breakdown charts
+- show_quality_of_life: Display QoL metrics radar
+- show_comparison: Compare multiple destinations
+- show_pros_cons: Show advantages/disadvantages
+
+ALWAYS use visualizations when discussing costs, quality of life, or comparisons.
+The user will see interactive charts in the sidebar when you use these tools.
+
+## CURRENT DESTINATION DATA
+Country: ${destination.country_name}
+Region: ${destination.region}
+Language: ${destination.language}
+`;
 
   // Parse cost data for visualizations
   const costCities = Array.isArray(destination.cost_of_living)
@@ -402,15 +593,21 @@ export default function DestinationClient({ slug, destination }: DestinationClie
           <NavBar />
 
         {/* Hero Section */}
-        <div
-          className="relative h-[70vh] min-h-[500px] bg-cover bg-center pt-16"
-          style={{
-            backgroundImage: heroImage
-              ? `url(${heroImage})`
-              : `linear-gradient(135deg, #1e3a5f 0%, #0c4a6e 50%, #164e63 100%)`,
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/70" />
+        <div className="relative h-[70vh] min-h-[500px] pt-16 overflow-hidden">
+          {/* Background Image */}
+          {heroImage && (
+            <img
+              src={heroImage}
+              alt={`${destination.country_name} landscape`}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+          {/* Fallback gradient if no image */}
+          {!heroImage && (
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900" />
+          )}
+          {/* Light overlay for text readability - reduced opacity */}
+          <div className="absolute inset-0 bg-black/20" />
 
           {/* Hero Content - Centered */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
@@ -750,8 +947,11 @@ export default function DestinationClient({ slug, destination }: DestinationClie
                   <CopilotSidebar
                     labels={{
                       title: `ATLAS - ${destination.country_name} Expert`,
-                      initial: `Hi! I'm ATLAS, your ${destination.country_name} relocation expert. I can help you with:\n\n• Visa options and requirements\n• Cost of living breakdown\n• Best cities to live in\n• Job market insights\n• Tax benefits and planning\n• Lifestyle and culture\n\nWhat would you like to know about moving to ${destination.country_name}?`,
+                      initial: userName
+                        ? `Hi ${userName}! Welcome back to Relocation Quest. I'm ATLAS, your ${destination.country_name} expert.\n\nI remember our previous conversations. How can I help you today with ${destination.country_name}?\n\nI can show you:\n• Visual cost breakdowns\n• Quality of life comparisons\n• Visa pathways\n• Job market insights`
+                        : `Hi! I'm ATLAS, your ${destination.country_name} relocation expert. I can help you with:\n\n• Visa options and requirements\n• Cost of living breakdown\n• Best cities to live in\n• Job market insights\n• Tax benefits and planning\n• Lifestyle and culture\n\nWhat would you like to know about moving to ${destination.country_name}?`,
                     }}
+                    instructions={personalizedInstructions}
                     className="h-full"
                   />
                 </div>
