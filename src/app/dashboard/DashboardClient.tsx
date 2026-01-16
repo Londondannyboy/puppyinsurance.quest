@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CopilotSidebar } from '@copilotkit/react-ui';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
+import { useAuthenticate } from '@/lib/auth/client';
 
 interface User {
   id: string;
@@ -417,7 +418,7 @@ function OnboardingWizard({
 }
 
 // Main Dashboard Component
-function Dashboard({ user, profile }: { user: User; profile: UserProfile }) {
+function Dashboard({ user, profile, onEditProfile }: { user: User; profile: UserProfile; onEditProfile: () => void }) {
   const persona = PERSONAS.find((p) => p.id === profile.persona);
 
   // Make user profile readable to CopilotKit
@@ -538,7 +539,7 @@ function Dashboard({ user, profile }: { user: User; profile: UserProfile }) {
           </div>
 
           {/* Checklist */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 mb-8">
             <h2 className="text-xl font-bold text-slate-900 mb-4">Getting Started</h2>
             <div className="space-y-3">
               {[
@@ -564,6 +565,125 @@ function Dashboard({ user, profile }: { user: User; profile: UserProfile }) {
               ))}
             </div>
           </div>
+
+          {/* Profile & Settings */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-slate-900">Profile & Settings</h2>
+              <button
+                onClick={onEditProfile}
+                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+              >
+                Edit Profile
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              {/* Account Info */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Account</h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-xs text-slate-500">Email</div>
+                    <div className="text-slate-900">{user.email}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500">Name</div>
+                    <div className="text-slate-900">{user.name || 'Not set'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500">Member since</div>
+                    <div className="text-slate-900">January 2026</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preferences */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Preferences</h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-xs text-slate-500">Current Country</div>
+                    <div className="text-slate-900">{profile.current_country || 'Not set'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500">Timeline</div>
+                    <div className="text-slate-900 capitalize">{profile.timeline?.replace('-', ' ') || 'Not set'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-slate-500">Monthly Budget</div>
+                    <div className="text-slate-900">€{(profile.budget_monthly || 0).toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Priorities */}
+            <div className="mt-6 pt-6 border-t border-slate-100">
+              <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Your Priorities</h3>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-slate-700">Tax Benefits</span>
+                    <span className="text-amber-600 font-bold">{profile.priority_tax_benefits || 3}/5</span>
+                  </div>
+                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-400 to-orange-500 rounded-full"
+                      style={{ width: `${((profile.priority_tax_benefits || 3) / 5) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-slate-700">Cost of Living</span>
+                    <span className="text-emerald-600 font-bold">{profile.priority_cost_of_living || 3}/5</span>
+                  </div>
+                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full"
+                      style={{ width: `${((profile.priority_cost_of_living || 3) / 5) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                <div className="bg-slate-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-slate-700">Climate</span>
+                    <span className="text-blue-600 font-bold">{profile.priority_climate || 3}/5</span>
+                  </div>
+                  <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full"
+                      style={{ width: `${((profile.priority_climate || 3) / 5) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Actions */}
+            <div className="mt-6 pt-6 border-t border-slate-100 flex gap-4">
+              <Link
+                href="/account/settings"
+                className="text-sm text-slate-600 hover:text-slate-900 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Account Settings
+              </Link>
+              <button
+                onClick={onEditProfile}
+                className="text-sm text-amber-600 hover:text-amber-700 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Update Preferences
+              </button>
+            </div>
+          </div>
         </main>
 
         {/* Right Sidebar: CopilotKit */}
@@ -578,6 +698,7 @@ function Dashboard({ user, profile }: { user: User; profile: UserProfile }) {
               </div>
               <div className="flex-1 overflow-hidden">
                 <CopilotSidebar
+                  defaultOpen={true}
                   labels={{
                     title: 'ATLAS - Your Advisor',
                     initial: `Hi ${user.name || 'there'}! I've reviewed your profile and I'm ready to help you plan your relocation.\n\nBased on your preferences, I can help you with:\n• Comparing destinations\n• Understanding visa options\n• Estimating costs\n• Planning your timeline\n\nWhat would you like to explore?`,
@@ -617,9 +738,25 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // For demo purposes, we'll use mock data
-  // In production, this would integrate with Neon Auth
-  const user = DEMO_USER;
+  // Get real auth data from Neon Auth
+  const { data: authData, user: authUser, isPending: authPending } = useAuthenticate();
+
+  // Build user object from auth
+  const user: User = authUser ? {
+    id: authUser.id,
+    email: (authUser as any).email || '',
+    name: (authUser as any).name || (authUser as any).email?.split('@')[0] || null,
+  } : DEMO_USER;
+
+  // Debug auth state
+  useEffect(() => {
+    console.log('[Dashboard Auth] ================================');
+    console.log('[Dashboard Auth] authPending:', authPending);
+    console.log('[Dashboard Auth] authData:', authData);
+    console.log('[Dashboard Auth] authUser:', authUser);
+    console.log('[Dashboard Auth] user (final):', user);
+    console.log('[Dashboard Auth] ================================');
+  }, [authPending, authData, authUser, user]);
 
   useEffect(() => {
     async function fetchProfile() {
@@ -643,12 +780,37 @@ export default function DashboardClient() {
     fetchProfile();
   }, []);
 
-  if (loading) {
+  if (loading || authPending) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-white">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt if not authenticated
+  if (!authUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center">
+          <span className="text-6xl mb-6 block">🌍</span>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Welcome to Relocation Quest</h1>
+          <p className="text-slate-600 mb-8">Sign in to access your personalized dashboard and track your relocation journey.</p>
+          <Link
+            href="/auth/sign-in"
+            className="block w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all mb-4"
+          >
+            Sign In
+          </Link>
+          <Link
+            href="/auth/sign-up"
+            className="block w-full border-2 border-slate-200 text-slate-700 px-8 py-3 rounded-xl font-semibold hover:border-amber-300 transition-all"
+          >
+            Create Account
+          </Link>
         </div>
       </div>
     );
@@ -669,5 +831,5 @@ export default function DashboardClient() {
     );
   }
 
-  return <Dashboard user={user} profile={profile || DEMO_PROFILE} />;
+  return <Dashboard user={user} profile={profile || DEMO_PROFILE} onEditProfile={() => setShowOnboarding(true)} />;
 }
