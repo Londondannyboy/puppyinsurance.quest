@@ -39,16 +39,44 @@ function VoiceWidget({
   const handleConnect = useCallback(async () => {
     setIsPending(true)
 
-    // Variables for the CLM (Quest prompt)
+    // Fetch Zep context if user is logged in
+    let zepContext = ""
+    if (userId) {
+      try {
+        const zepRes = await fetch(`/api/zep-context?userId=${userId}`)
+        const zepData = await zepRes.json()
+        if (zepData.context) {
+          zepContext = zepData.context
+          log(`Zep context loaded: ${zepData.facts?.length || 0} facts`)
+        }
+      } catch (e) {
+        console.warn('[Hume] Failed to fetch Zep context:', e)
+      }
+    }
+
+    // Build system prompt with user context (passed to CLM)
+    const firstName = userName?.split(' ')[0] || ''
+    const systemPrompt = `## USER CONTEXT
+name: ${firstName || 'Guest'}
+user_id: ${userId || 'anonymous'}
+is_authenticated: ${isAuthenticated}
+
+${zepContext ? `## WHAT I REMEMBER ABOUT ${firstName || 'THIS USER'}:\n${zepContext}\n` : '## This is their first visit - no prior history.\n'}
+
+## GREETING
+${firstName ? `Greet them warmly: "Hey ${firstName}! Great to hear from you!"` : 'Give a friendly greeting as Buddy the puppy insurance advisor.'}
+`
+
+    // Variables for the CLM
     const sessionSettings = {
       type: 'session_settings' as const,
       variables: {
         user_id: userId || '',
-        first_name: userName || '',
+        first_name: firstName,
         is_authenticated: isAuthenticated ? 'true' : 'false',
       },
-      // Pass custom_session_id to link with Zep/CLM memory
-      customSessionId: userId ? `${userName || 'User'}|${userId}` : undefined
+      customSessionId: userId ? `${userName || 'User'}|${userId}` : undefined,
+      systemPrompt: systemPrompt
     }
 
     log(`Connecting: ${userName || 'Guest'}, auth=${isAuthenticated}`)
@@ -57,7 +85,7 @@ function VoiceWidget({
       await connect({
         auth: { type: 'accessToken', value: accessToken },
         configId: CONFIG_ID,
-        sessionSettings: sessionSettings as any // Type cast if needed depending on SDK version
+        sessionSettings: sessionSettings as any
       })
       log('Connected!')
     } catch (e: any) {

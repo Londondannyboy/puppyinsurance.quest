@@ -445,6 +445,45 @@ def extract_user_from_session(session_id: Optional[str]) -> tuple[Optional[str],
     return user_name, user_id
 
 
+def extract_user_from_messages(messages: list) -> tuple[Optional[str], Optional[str], Optional[str]]:
+    """
+    Extract user info from system message (Hume forwards systemPrompt as system message).
+    Returns: (user_name, user_id, zep_context)
+    """
+    import re
+
+    user_name = None
+    user_id = None
+    zep_context = None
+
+    for msg in messages:
+        if msg.get("role") == "system":
+            content = msg.get("content", "")
+
+            # Extract name: field
+            name_match = re.search(r'name:\s*([^\n]+)', content, re.IGNORECASE)
+            if name_match:
+                name = name_match.group(1).strip()
+                if name.lower() not in ['guest', 'anonymous', '']:
+                    user_name = name
+
+            # Extract user_id: field
+            id_match = re.search(r'user_id:\s*([^\n]+)', content, re.IGNORECASE)
+            if id_match:
+                uid = id_match.group(1).strip()
+                if uid.lower() not in ['anonymous', '']:
+                    user_id = uid
+
+            # Extract Zep context section
+            zep_match = re.search(r'## WHAT I REMEMBER.*?:\n([\s\S]*?)(?=\n##|\Z)', content)
+            if zep_match:
+                zep_context = zep_match.group(1).strip()
+
+            break  # Only process first system message
+
+    return user_name, user_id, zep_context
+
+
 # =============================================================================
 # OPENAI-COMPATIBLE ENDPOINT (FOR HUME EVI)
 # =============================================================================
@@ -462,7 +501,17 @@ async def chat_completions(request: Request):
 
         # Extract user info from session ID (format: "name|userId")
         user_name, user_id = extract_user_from_session(session_id)
-        print(f"[BUDDY] Session: {session_id}, User: {user_name}, ID: {user_id}", file=sys.stderr)
+
+        # Also extract from system message (Hume forwards systemPrompt)
+        sys_name, sys_id, zep_context = extract_user_from_messages(messages)
+
+        # Prefer system message values (they're fresher)
+        if sys_name:
+            user_name = sys_name
+        if sys_id:
+            user_id = sys_id
+
+        print(f"[BUDDY] User: {user_name}, ID: {user_id}, Zep context: {bool(zep_context)}", file=sys.stderr)
 
         # Extract user message
         user_message = ""
