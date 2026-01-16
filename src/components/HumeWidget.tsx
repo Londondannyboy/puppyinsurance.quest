@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { VoiceProvider, useVoice } from '@humeai/voice-react'
-// import { useAuthData } from '@neondatabase/neon-js/auth/react'
+import { authClient } from '@/lib/auth/client'
 
 const CONFIG_ID = process.env.NEXT_PUBLIC_HUME_CONFIG_ID || ''
 
@@ -140,12 +140,25 @@ function VoiceWidget({
 export function HumeWidget() {
   const [accessToken, setAccessToken] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  
-  // Neon Auth Integration (MOCKED for now - TODO: integrate Neon Auth)
-  // const { auth, status } = useAuthData()
-  const isAuthenticated = false // mock - will be true when Neon Auth is integrated
-  const userId: string | undefined = undefined // auth?.user?.id
-  const userName: string | undefined = undefined // auth?.user?.name
+
+  // Get real auth from Neon Auth (using authClient.useSession like fractional.quest)
+  const { data: session, isPending: authPending } = authClient.useSession()
+  const user = session?.user
+  const isAuthenticated = !!user
+  const userId = user?.id
+  const userName = user?.name || user?.email?.split('@')[0]
+
+  // Debug auth state
+  useEffect(() => {
+    console.log('[HumeWidget Auth] ================================')
+    console.log('[HumeWidget Auth] authPending:', authPending)
+    console.log('[HumeWidget Auth] session:', session)
+    console.log('[HumeWidget Auth] user:', user)
+    console.log('[HumeWidget Auth] isAuthenticated:', isAuthenticated)
+    console.log('[HumeWidget Auth] userId:', userId)
+    console.log('[HumeWidget Auth] userName:', userName)
+    console.log('[HumeWidget Auth] ================================')
+  }, [authPending, session, user, isAuthenticated, userId, userName])
 
   useEffect(() => {
     fetch('/api/hume-token')
