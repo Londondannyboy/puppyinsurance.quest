@@ -11,7 +11,7 @@ import { QualityOfLifeRadar } from '@/components/mdx/QualityOfLifeRadar';
 import { ComparisonTable } from '@/components/mdx/ComparisonTable';
 import { ProsCons } from '@/components/mdx/ProsCons';
 import { useZepMemory } from '@/hooks/useZepMemory';
-import { useAuthenticate } from '@/lib/auth/client';
+import { authClient } from '@/lib/auth/client';
 
 // Types
 interface QuickFact {
@@ -354,21 +354,22 @@ export default function DestinationClient({ slug, destination }: DestinationClie
     });
   }, [destination.country_name, destination.hero_image_url, destination.cost_of_living, slug, fallbackData]);
 
-  // Get logged-in user from Neon Auth
-  const { data: authData, user: authUser, isPending: authPending } = useAuthenticate();
-  const authUserId = authUser?.id || null;
-  const authUserName = (authUser as any)?.name || (authUser as any)?.email?.split('@')[0] || null;
+  // Get logged-in user from Neon Auth (using authClient.useSession like fractional.quest)
+  const { data: session, isPending: authPending } = authClient.useSession();
+  const user = session?.user;
+  const authUserId = user?.id || null;
+  const authUserName = user?.name || user?.email?.split('@')[0] || null;
 
   // Debug auth state
   useEffect(() => {
     console.log('[Auth Debug] ================================');
     console.log('[Auth Debug] authPending:', authPending);
-    console.log('[Auth Debug] authData:', authData);
-    console.log('[Auth Debug] authUser:', authUser);
+    console.log('[Auth Debug] session:', session);
+    console.log('[Auth Debug] user:', user);
     console.log('[Auth Debug] authUserId:', authUserId);
     console.log('[Auth Debug] authUserName:', authUserName);
     console.log('[Auth Debug] ================================');
-  }, [authPending, authData, authUser, authUserId, authUserName]);
+  }, [authPending, session, user, authUserId, authUserName]);
 
   // Zep memory for user context (now using real auth)
   const { user: zepUser, facts: userFacts, buildContext, isReturningUser } = useZepMemory(authUserId);

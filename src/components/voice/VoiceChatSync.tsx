@@ -59,19 +59,33 @@ const VoiceChatContext = createContext<VoiceChatContextType>({
 
 export const useVoiceChat = () => useContext(VoiceChatContext);
 
-// Build system prompt with user context (matches lost.london pattern)
-function buildSystemPrompt(userContext: UserContext | null, pageContext?: string): string {
+// Build system prompt with user context and Zep memory
+function buildSystemPrompt(
+  userContext: UserContext | null,
+  pageContext?: string,
+  zepContext?: string
+): string {
   const userName = userContext?.userName || 'Guest';
   const isReturning = userContext?.isReturningUser || false;
   const facts = userContext?.userFacts?.slice(0, 3).join(', ') || '';
   const persona = userContext?.persona || 'general';
 
-  return `USER_CONTEXT:
+  let prompt = `USER_CONTEXT:
 name: ${userName}
 ${facts ? `interests: ${facts}` : ''}
 persona: ${persona}
 status: ${isReturning ? 'returning_user' : 'new_user'}
-${pageContext ? `current_page: ${pageContext}` : ''}
+${pageContext ? `current_page: ${pageContext}` : ''}`;
+
+  // Add Zep memory context if available
+  if (zepContext) {
+    prompt += `
+
+### What I Remember About ${userName}:
+${zepContext}`;
+  }
+
+  prompt += `
 
 GREETING:
 ${isReturning && userName !== 'Guest' ? `This is ${userName}'s return visit. Greet them warmly by name: "Welcome back, ${userName}!"` : ''}
@@ -87,8 +101,11 @@ IDENTITY:
 RULES:
 - Use their name occasionally (not every message)
 - Be helpful and specific about relocation topics
+- If you remember their preferences, reference them naturally
 - End with a relevant follow-up question
 - Focus on: visas, cost of living, lifestyle, job market`;
+
+  return prompt;
 }
 
 // Inner component that has access to both Hume and CopilotKit
@@ -199,18 +216,38 @@ function VoiceChatSyncInner({
 
     setIsPending(true);
 
-    // Build system prompt with user context (matches lost.london pattern)
-    const systemPrompt = buildSystemPrompt(userContext, pageContext);
+    // Fetch Zep context if user is logged in (matches fractional.quest pattern)
+    let zepContext = '';
+    if (userContext?.userId) {
+      debug('Zep', `Fetching context for userId: ${userContext.userId}`);
+      try {
+        const zepRes = await fetch(`/api/zep-context?userId=${userContext.userId}`);
+        const zepData = await zepRes.json();
+        if (zepData.context) {
+          zepContext = zepData.context;
+          debug('Zep', `Got context: ${zepContext.substring(0, 100)}...`);
+        } else {
+          debug('Zep', 'No context found for user');
+        }
+      } catch (e) {
+        debug('Zep', 'Failed to fetch context', e);
+      }
+    }
 
-    // Session ID with name for backend tracking
-    const sessionIdWithName = userContext?.userName && userContext.userName !== 'Guest'
-      ? `${userContext.userName}|${userContext.userId || Date.now()}`
+    // Build system prompt with user context AND Zep memory
+    const systemPrompt = buildSystemPrompt(userContext, pageContext, zepContext);
+
+    // Session ID with name for backend tracking (stable ID for returning users)
+    const sessionIdWithName = userContext?.userId
+      ? `relocation_${userContext.userId}`
       : `guest_${Date.now()}`;
 
     debug('Action', '================================');
     debug('Action', `Connecting as: ${userContext?.userName || 'Guest'}`);
+    debug('Action', `User ID: ${userContext?.userId || 'none'}`);
     debug('Action', `Session ID: ${sessionIdWithName}`);
-    debug('Action', `System Prompt: ${systemPrompt.substring(0, 300)}...`);
+    debug('Action', `Has Zep context: ${zepContext ? 'YES' : 'NO'}`);
+    debug('Action', `System Prompt: ${systemPrompt.substring(0, 400)}...`);
     debug('Action', '================================');
 
     try {

@@ -1,9 +1,11 @@
 'use client';
 
-import { createAuthClient } from '@neondatabase/neon-js/auth/next';
+// Use the same auth client pattern as fractional.quest
+import { createAuthClient } from '@neondatabase/auth/next';
 
 export const authClient = createAuthClient();
 
+// Re-export UI components from neon-js wrapper
 export {
   NeonAuthUIProvider,
   AuthView,

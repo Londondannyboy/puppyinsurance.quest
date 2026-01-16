@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CopilotSidebar } from '@copilotkit/react-ui';
 import { useCopilotReadable, useCopilotAction } from '@copilotkit/react-core';
-import { useAuthenticate } from '@/lib/auth/client';
+import { authClient } from '@/lib/auth/client';
 
 interface User {
   id: string;
@@ -738,25 +738,26 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  // Get real auth data from Neon Auth
-  const { data: authData, user: authUser, isPending: authPending } = useAuthenticate();
+  // Get real auth data from Neon Auth (using authClient.useSession like fractional.quest)
+  const { data: session, isPending: authPending } = authClient.useSession();
+  const authUser = session?.user;
 
   // Build user object from auth
   const user: User = authUser ? {
     id: authUser.id,
-    email: (authUser as any).email || '',
-    name: (authUser as any).name || (authUser as any).email?.split('@')[0] || null,
+    email: authUser.email || '',
+    name: authUser.name || authUser.email?.split('@')[0] || null,
   } : DEMO_USER;
 
   // Debug auth state
   useEffect(() => {
     console.log('[Dashboard Auth] ================================');
     console.log('[Dashboard Auth] authPending:', authPending);
-    console.log('[Dashboard Auth] authData:', authData);
+    console.log('[Dashboard Auth] session:', session);
     console.log('[Dashboard Auth] authUser:', authUser);
     console.log('[Dashboard Auth] user (final):', user);
     console.log('[Dashboard Auth] ================================');
-  }, [authPending, authData, authUser, user]);
+  }, [authPending, session, authUser, user]);
 
   useEffect(() => {
     async function fetchProfile() {
