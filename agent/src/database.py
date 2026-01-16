@@ -549,3 +549,248 @@ async def get_topic_image(query: str) -> Optional[str]:
     except Exception as e:
         print(f"[ATLAS DB] Error looking up topic image: {e}", file=sys.stderr)
         return None
+
+
+async def get_property_market(destination: str) -> Optional[dict]:
+    """
+    Get property market data for a destination.
+
+    Args:
+        destination: Country name or slug
+
+    Returns:
+        Property market data including prices by city, rental yields, etc.
+    """
+    try:
+        slug = destination.lower().replace(" ", "-").replace("uae", "uae")
+        async with get_connection() as conn:
+            result = await conn.fetchrow("""
+                SELECT country_name, flag, region,
+                       COALESCE(property_market, '{}'::jsonb) as property_market
+                FROM destinations
+                WHERE slug = $1 AND enabled = true
+            """, slug)
+
+            if result:
+                return {
+                    "country_name": result["country_name"],
+                    "flag": result["flag"],
+                    "region": result["region"],
+                    "property_market": json.loads(result["property_market"]) if result["property_market"] else {}
+                }
+            return None
+    except Exception as e:
+        print(f"[ATLAS DB] Error getting property market: {e}", file=sys.stderr)
+        return None
+
+
+async def get_education_data(destination: str) -> Optional[dict]:
+    """
+    Get education data for a destination.
+
+    Args:
+        destination: Country name or slug
+
+    Returns:
+        Education data including schools, universities, system info
+    """
+    try:
+        slug = destination.lower().replace(" ", "-").replace("uae", "uae")
+        async with get_connection() as conn:
+            result = await conn.fetchrow("""
+                SELECT country_name, flag, region,
+                       COALESCE(education_data, '{}'::jsonb) as education_data
+                FROM destinations
+                WHERE slug = $1 AND enabled = true
+            """, slug)
+
+            if result:
+                return {
+                    "country_name": result["country_name"],
+                    "flag": result["flag"],
+                    "region": result["region"],
+                    "education_data": json.loads(result["education_data"]) if result["education_data"] else {}
+                }
+            return None
+    except Exception as e:
+        print(f"[ATLAS DB] Error getting education data: {e}", file=sys.stderr)
+        return None
+
+
+async def get_climate_data(destination: str) -> Optional[dict]:
+    """
+    Get climate data for a destination.
+
+    Args:
+        destination: Country name or slug
+
+    Returns:
+        Climate data including seasons, temperatures, best months
+    """
+    try:
+        slug = destination.lower().replace(" ", "-").replace("uae", "uae")
+        async with get_connection() as conn:
+            result = await conn.fetchrow("""
+                SELECT country_name, flag, region,
+                       COALESCE(climate_data, '{}'::jsonb) as climate_data
+                FROM destinations
+                WHERE slug = $1 AND enabled = true
+            """, slug)
+
+            if result:
+                return {
+                    "country_name": result["country_name"],
+                    "flag": result["flag"],
+                    "region": result["region"],
+                    "climate_data": json.loads(result["climate_data"]) if result["climate_data"] else {}
+                }
+            return None
+    except Exception as e:
+        print(f"[ATLAS DB] Error getting climate data: {e}", file=sys.stderr)
+        return None
+
+
+async def get_quality_of_life(destination: str) -> Optional[dict]:
+    """
+    Get quality of life data for a destination.
+
+    Args:
+        destination: Country name or slug
+
+    Returns:
+        Quality of life metrics including safety, cost index, expat friendliness
+    """
+    try:
+        slug = destination.lower().replace(" ", "-").replace("uae", "uae")
+        async with get_connection() as conn:
+            result = await conn.fetchrow("""
+                SELECT country_name, flag, region,
+                       COALESCE(quality_of_life, '{}'::jsonb) as quality_of_life
+                FROM destinations
+                WHERE slug = $1 AND enabled = true
+            """, slug)
+
+            if result:
+                return {
+                    "country_name": result["country_name"],
+                    "flag": result["flag"],
+                    "region": result["region"],
+                    "quality_of_life": json.loads(result["quality_of_life"]) if result["quality_of_life"] else {}
+                }
+            return None
+    except Exception as e:
+        print(f"[ATLAS DB] Error getting quality of life: {e}", file=sys.stderr)
+        return None
+
+
+async def search_destinations_by_criteria(
+    has_digital_nomad_visa: bool = None,
+    max_cost_index: float = None,
+    min_safety_index: float = None,
+    region: str = None,
+    min_quality_score: float = None,
+) -> list[dict]:
+    """
+    Search destinations by specific criteria.
+
+    Args:
+        has_digital_nomad_visa: Filter for countries with DN visa
+        max_cost_index: Maximum cost of living index
+        min_safety_index: Minimum safety index
+        region: Filter by region (Europe, Asia, etc.)
+        min_quality_score: Minimum quality of life score
+
+    Returns:
+        List of matching destinations
+    """
+    try:
+        async with get_connection() as conn:
+            # Build dynamic WHERE clause
+            conditions = ["enabled = true"]
+            params = []
+            param_idx = 1
+
+            if has_digital_nomad_visa is not None:
+                conditions.append(f"(digital_nomad_info->>'visa_available')::boolean = ${param_idx}")
+                params.append(has_digital_nomad_visa)
+                param_idx += 1
+
+            if max_cost_index is not None:
+                conditions.append(f"(quality_of_life->>'cost_of_living_index')::float <= ${param_idx}")
+                params.append(max_cost_index)
+                param_idx += 1
+
+            if min_safety_index is not None:
+                conditions.append(f"(quality_of_life->>'safety_index')::float >= ${param_idx}")
+                params.append(min_safety_index)
+                param_idx += 1
+
+            if region is not None:
+                conditions.append(f"region ILIKE ${param_idx}")
+                params.append(f"%{region}%")
+                param_idx += 1
+
+            if min_quality_score is not None:
+                conditions.append(f"(quality_of_life->>'overall_score')::float >= ${param_idx}")
+                params.append(min_quality_score)
+                param_idx += 1
+
+            query = f"""
+                SELECT slug, country_name, flag, region,
+                       COALESCE(quality_of_life, '{{}}'::jsonb) as quality_of_life,
+                       COALESCE(digital_nomad_info, '{{}}'::jsonb) as digital_nomad_info
+                FROM destinations
+                WHERE {' AND '.join(conditions)}
+                ORDER BY (quality_of_life->>'overall_score')::float DESC NULLS LAST
+                LIMIT 10
+            """
+
+            results = await conn.fetch(query, *params)
+
+            return [
+                {
+                    "slug": r["slug"],
+                    "country_name": r["country_name"],
+                    "flag": r["flag"],
+                    "region": r["region"],
+                    "quality_of_life": json.loads(r["quality_of_life"]) if r["quality_of_life"] else {},
+                    "digital_nomad_info": json.loads(r["digital_nomad_info"]) if r["digital_nomad_info"] else {},
+                }
+                for r in results
+            ]
+    except Exception as e:
+        print(f"[ATLAS DB] Error searching by criteria: {e}", file=sys.stderr)
+        return []
+
+
+async def get_dining_nightlife(destination: str) -> Optional[dict]:
+    """
+    Get dining and nightlife data for a destination.
+
+    Args:
+        destination: Country name or slug
+
+    Returns:
+        Dining data including restaurants, signature dishes, costs
+    """
+    try:
+        slug = destination.lower().replace(" ", "-").replace("uae", "uae")
+        async with get_connection() as conn:
+            result = await conn.fetchrow("""
+                SELECT country_name, flag, region,
+                       COALESCE(dining_nightlife, '{}'::jsonb) as dining_nightlife
+                FROM destinations
+                WHERE slug = $1 AND enabled = true
+            """, slug)
+
+            if result:
+                return {
+                    "country_name": result["country_name"],
+                    "flag": result["flag"],
+                    "region": result["region"],
+                    "dining_nightlife": json.loads(result["dining_nightlife"]) if result["dining_nightlife"] else {}
+                }
+            return None
+    except Exception as e:
+        print(f"[ATLAS DB] Error getting dining data: {e}", file=sys.stderr)
+        return None
