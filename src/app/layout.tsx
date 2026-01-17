@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Aionysus Wine - AI Wine Sommelier",
-  description: "Your divine AI guide to the world of wine. Discover, learn, and enjoy wines with Aionysus.",
+  title: "Pension Quest - UK Pension Advisor",
+  description: "Your friendly AI guide to UK pensions. Understand, compare, and plan your retirement with Penelope.",
 };
 
 export default function RootLayout({
@@ -28,6 +28,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        {/* Favicon - Q for Quest branding */}
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-title" content="Pension Quest" />
+        <link rel="manifest" href="/site.webmanifest" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-white`}
       >
@@ -38,26 +47,19 @@ export default function RootLayout({
           social={{ providers: ['google'] }}
         >
           <header className="fixed top-0 left-0 right-0 h-14 bg-slate-900/95 backdrop-blur-sm z-[9999] flex items-center justify-between px-6 border-b border-slate-800">
-        {/* Favicon - Q for Quest branding */}
-        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-title" content="Pension Quest" />
-        <link rel="manifest" href="/site.webmanifest" />
             {/* Logo / Brand */}
             <a href="/" className="flex items-center gap-2 text-white font-semibold text-lg">
-              <span className="text-2xl">\ud83c\udf77</span>
-              <span>Aionysus Wine</span>
+              <span className="text-2xl">💰</span>
+              <span>Pension Quest</span>
             </a>
 
             {/* Navigation Links */}
             <nav className="flex items-center gap-6">
               <a href="/" className="text-white/90 hover:text-white text-sm font-medium transition-colors">
-                Discover
+                Explore
               </a>
               <a href="/dashboard" className="text-white/90 hover:text-white text-sm font-medium transition-colors">
-                My Cellar
+                My Pensions
               </a>
               <UserButton size="icon" />
             </nav>
