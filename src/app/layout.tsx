@@ -21,12 +21,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Puppy Insurance UK | Compare Pet Insurance for Puppies & Dogs",
-    template: "%s | Puppy Insurance Quest",
+    default: "Puppy Insurance Prices UK | Cockapoo Insurance UK | Compare Pet Insurance",
+    template: "%s | Puppy Insurance Prices & Cockapoo Insurance UK",
   },
   description:
-    "Compare the best puppy insurance in the UK. Get instant quotes for Jack Russell, Pug, Cockapoo & more breeds. AI-powered pet insurance advisor helps you find the perfect coverage.",
+    "Compare puppy insurance prices in the UK. Get instant quotes for Cockapoo insurance UK, Jack Russell, Pug & more breeds. Find the best puppy insurance prices with our AI-powered pet insurance advisor. Cockapoo insurance UK specialists.",
   keywords: [
+    "puppy insurance prices",
+    "cockapoo insurance uk",
     "puppy insurance",
     "pet insurance puppies",
     "dog insurance UK",
@@ -38,9 +40,9 @@ export const metadata: Metadata = {
     "puppy insurance cost",
     "compare pet insurance",
   ],
-  authors: [{ name: "Puppy Insurance Quest" }],
-  creator: "Puppy Insurance Quest",
-  publisher: "Puppy Insurance Quest",
+  authors: [{ name: "Puppy Insurance Prices & Cockapoo Insurance UK" }],
+  creator: "Puppy Insurance Prices & Cockapoo Insurance UK",
+  publisher: "Puppy Insurance Prices & Cockapoo Insurance UK",
   formatDetection: {
     email: false,
     address: false,
@@ -51,18 +53,18 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Puppy Insurance UK | Compare Pet Insurance for Puppies & Dogs",
+    title: "Puppy Insurance Prices UK | Cockapoo Insurance UK | Compare Pet Insurance",
     description:
-      "Compare the best puppy insurance in the UK. Get instant quotes with our AI-powered pet insurance advisor.",
+      "Compare puppy insurance prices in the UK. Get instant Cockapoo insurance UK quotes with our AI-powered pet insurance advisor. Best puppy insurance prices guaranteed.",
     url: "https://puppyinsurance.quest",
-    siteName: "Puppy Insurance Quest",
+    siteName: "Puppy Insurance Prices & Cockapoo Insurance UK",
     locale: "en_GB",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Puppy Insurance UK | Compare Pet Insurance",
-    description: "Compare the best puppy insurance in the UK. AI-powered quotes for all breeds.",
+    title: "Puppy Insurance Prices UK | Cockapoo Insurance UK",
+    description: "Compare puppy insurance prices in the UK. Cockapoo insurance UK specialists with AI-powered quotes for all breeds.",
   },
   robots: {
     index: true,
@@ -90,7 +92,7 @@ export default function RootLayout({
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-title" content="Puppy Insurance Quest" />
+        <meta name="apple-mobile-web-app-title" content="Puppy Insurance Prices & Cockapoo Insurance UK" />
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body

@@ -391,18 +391,18 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
               className="mb-8"
             >
               <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold mb-6 leading-tight">
-                <span className="text-amber-400">Puppy Insurance UK</span>
+                <span className="text-amber-400">Puppy Insurance Prices UK</span>
                 <br />
-                <span className="text-white">Compare Pet Insurance for Puppies</span>
+                <span className="text-white">Cockapoo Insurance UK & More</span>
               </h1>
               <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
-                Find the <strong>best puppy insurance</strong> for your furry friend. Compare puppy insurance plans from top UK providers,
-                get instant quotes, and protect your pet from unexpected vet bills. Whether you have a playful
+                Compare <strong>puppy insurance prices</strong> and find the best coverage for your furry friend. We specialise in <strong>Cockapoo insurance UK</strong> and compare puppy insurance plans from top UK providers.
+                Get instant quotes and protect your pet from unexpected vet bills. Whether you have a playful
                 <Link href="/labrador-insurance" className="text-amber-400 hover:underline"> Labrador</Link>,
                 a lovable <Link href="/french-bulldog-insurance" className="text-amber-400 hover:underline"> French Bulldog</Link>,
-                or a spirited <Link href="/jack-russell-insurance" className="text-amber-400 hover:underline"> Jack Russell</Link> -
-                we help you find <Link href="/cheap-puppy-insurance" className="text-amber-400 hover:underline">cheap puppy insurance</Link> that fits your budget.
-                Understanding <Link href="/puppy-insurance-cost" className="text-amber-400 hover:underline">puppy insurance cost</Link> is essential before you buy.
+                or a <Link href="/cockapoo-insurance" className="text-amber-400 hover:underline"> Cockapoo</Link> -
+                our <strong>puppy insurance prices</strong> comparison helps you find affordable <strong>Cockapoo insurance UK</strong> coverage.
+                Understanding <Link href="/puppy-insurance-cost" className="text-amber-400 hover:underline">puppy insurance prices</Link> is essential before you buy.
               </p>
             </motion.div>
 
@@ -486,18 +486,16 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                What is Puppy Insurance and Why Do You Need It?
+                Understanding Puppy Insurance Prices & Cockapoo Insurance UK
               </h2>
               <div className="prose prose-invert max-w-none">
                 <p className="text-white/70 text-lg leading-relaxed mb-6">
-                  <strong className="text-white">Puppy insurance</strong> is a type of pet insurance specifically designed to cover
-                  veterinary costs for young dogs. With the average vet bill in the UK now exceeding £800 for emergency treatment,
-                  having comprehensive puppy insurance gives you peace of mind that your furry friend will always get the care they need.
+                  Understanding <strong className="text-white">puppy insurance prices</strong> is essential when looking for coverage for your pet. Whether you&apos;re searching for <strong className="text-white">Cockapoo insurance UK</strong> or coverage for another breed, knowing the costs helps you budget effectively.
+                  With the average vet bill in the UK now exceeding £800 for emergency treatment, comparing <strong className="text-white">puppy insurance prices</strong> gives you peace of mind that your furry friend will always get the care they need.
                 </p>
                 <p className="text-white/70 leading-relaxed mb-6">
                   Puppies are naturally curious and can get into all sorts of trouble - from swallowing foreign objects to injuries
-                  from adventurous play. Additionally, many hereditary conditions don&apos;t show symptoms until later in life. By getting
-                  <strong className="text-white"> pet insurance for puppies</strong> early, you ensure these conditions are covered
+                  from adventurous play. <strong className="text-white">Cockapoo insurance UK</strong> is particularly popular as Cockapoos are one of the most beloved crossbreeds. By understanding <strong className="text-white">puppy insurance prices</strong> early, you ensure these conditions are covered
                   before they become &quot;pre-existing.&quot;
                 </p>
                 <ul className="space-y-3 text-white/70">
@@ -539,11 +537,11 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
         <Section id="video-guides">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Puppy Insurance Explained: Video Guides
+              Puppy Insurance Prices Explained: Video Guides
             </h2>
             <p className="text-white/70 text-lg max-w-3xl mx-auto">
-              Learn more about pet insurance for puppies with these helpful video guides from trusted sources.
-              Understanding how puppy insurance works helps you make an informed decision.
+              Learn more about <strong>puppy insurance prices</strong> and <strong>Cockapoo insurance UK</strong> with these helpful video guides from trusted sources.
+              Understanding how <strong>puppy insurance prices</strong> work helps you make an informed decision about <strong>Cockapoo insurance UK</strong> and other breeds.
             </p>
           </div>
 
@@ -618,11 +616,11 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
         <Section id="puppy-insurance-cost">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              How Much Does Puppy Insurance Cost?
+              Compare Puppy Insurance Prices & Cockapoo Insurance UK Costs
             </h2>
             <p className="text-white/70 text-lg max-w-3xl mx-auto">
-              <strong className="text-white">Puppy insurance costs</strong> vary based on breed, age, location, and coverage level.
-              Use our interactive calculator to get an instant estimate, or explore our detailed pricing guide.
+              <strong className="text-white">Puppy insurance prices</strong> vary based on breed, age, location, and coverage level. <strong className="text-white">Cockapoo insurance UK</strong> tends to be more affordable than many purebreds.
+              Use our interactive calculator to get instant <strong className="text-white">puppy insurance prices</strong> estimates, or explore our detailed <strong className="text-white">Cockapoo insurance UK</strong> pricing guide.
             </p>
           </div>
 
@@ -677,10 +675,10 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
         <Section id="compare-pet-insurance" className="bg-stone-900/30">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Compare Pet Insurance Plans
+              Compare Puppy Insurance Prices & Cockapoo Insurance UK Plans
             </h2>
             <p className="text-white/70 text-lg max-w-3xl mx-auto">
-              Not sure which plan is right for your puppy? <strong className="text-white">Compare pet insurance</strong> options
+              Not sure which plan is right for your puppy? Compare <strong className="text-white">puppy insurance prices</strong> and <strong className="text-white">Cockapoo insurance UK</strong> options
               side-by-side to find the perfect balance of coverage and cost for your needs.
             </p>
           </div>
@@ -746,7 +744,7 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
             <div className="order-2 lg:order-1">
               <Image
                 src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=800&q=80"
-                alt="Best puppy insurance - Golden Retriever puppy"
+                alt="Compare puppy insurance prices UK - Golden Retriever puppy"
                 width={600}
                 height={400}
                 className="rounded-2xl shadow-2xl"
@@ -754,11 +752,10 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
             </div>
             <div className="order-1 lg:order-2">
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                Finding the Best Puppy Insurance in 2025
+                Best Puppy Insurance Prices & Cockapoo Insurance UK Guide 2025
               </h2>
               <p className="text-white/70 text-lg leading-relaxed mb-6">
-                The <strong className="text-white">best puppy insurance</strong> isn&apos;t always the cheapest - it&apos;s the one
-                that provides the right coverage for your specific breed and circumstances. Here&apos;s what to look for:
+                The best <strong className="text-white">puppy insurance prices</strong> aren&apos;t always the cheapest - it&apos;s about finding the right <strong className="text-white">Cockapoo insurance UK</strong> coverage for your specific breed and circumstances. Here&apos;s what to look for when comparing <strong className="text-white">puppy insurance prices</strong>:
               </p>
               <div className="space-y-4">
                 <div className="bg-stone-900/60 rounded-xl p-4 border border-stone-700/50">
@@ -791,11 +788,11 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
         <Section id="cheap-puppy-insurance" className="bg-stone-900/30">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Cheap Puppy Insurance That Doesn&apos;t Compromise
+              Affordable Puppy Insurance Prices & Cockapoo Insurance UK Deals
             </h2>
             <p className="text-white/70 text-lg max-w-3xl mx-auto">
-              Looking for <strong className="text-white">cheap puppy insurance</strong>? You don&apos;t have to sacrifice quality
-              for affordability. Here are proven ways to reduce your premium while maintaining solid coverage.
+              Looking for the best <strong className="text-white">puppy insurance prices</strong>? <strong className="text-white">Cockapoo insurance UK</strong> can be affordable without sacrificing quality.
+              Here are proven ways to get competitive <strong className="text-white">puppy insurance prices</strong> while maintaining solid coverage for your <strong className="text-white">Cockapoo insurance UK</strong> needs.
             </p>
           </div>
 
@@ -857,11 +854,11 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
         <Section id="breed-insurance">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Dog Insurance by Breed
+              Puppy Insurance Prices by Breed - Cockapoo Insurance UK & More
             </h2>
             <p className="text-white/70 text-lg max-w-3xl mx-auto">
-              Different breeds have different health risks and insurance costs. Explore our breed-specific guides
-              to understand what coverage your dog needs and how much you&apos;ll pay.
+              <strong>Puppy insurance prices</strong> vary by breed - <strong>Cockapoo insurance UK</strong> tends to be more affordable than many purebreds. Explore our breed-specific guides
+              to understand <strong>puppy insurance prices</strong> and find the best <strong>Cockapoo insurance UK</strong> coverage for your dog.
             </p>
           </div>
 
@@ -891,7 +888,7 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
               name="Cockapoo"
               href="/cockapoo-insurance"
               risk="low"
-              description="Healthy crossbreed with lower premiums than purebreds."
+              description="Cockapoo insurance UK specialists. Healthy crossbreed with lower puppy insurance prices than purebreds."
               image="https://images.unsplash.com/photo-1591946614720-90a587da4a36?w=500&q=80"
             />
             <BreedCard
@@ -1198,7 +1195,7 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
             <div>
               <Image
                 src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80"
-                alt="Two dogs running - healthy puppies need insurance too"
+                alt="Compare puppy insurance prices UK - Cockapoo insurance UK for healthy puppies"
                 width={600}
                 height={400}
                 className="rounded-2xl shadow-2xl mb-8"
@@ -1336,7 +1333,7 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
               <div className="relative">
                 <Image
                   src="https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=600&q=80"
-                  alt="Veterinarian examining a puppy"
+                  alt="Veterinarian examining puppy - Cockapoo insurance UK covers vet costs with competitive puppy insurance prices"
                   width={500}
                   height={350}
                   className="rounded-xl shadow-lg"
@@ -1431,10 +1428,10 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
         <Section id="faq">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Frequently Asked Questions About Puppy Insurance
+              Puppy Insurance Prices FAQ - Cockapoo Insurance UK Questions
             </h2>
             <p className="text-white/70 text-lg max-w-3xl mx-auto">
-              Get answers to the most common questions about insuring your new puppy.
+              Get answers to the most common questions about <strong>puppy insurance prices</strong> and <strong>Cockapoo insurance UK</strong> coverage.
             </p>
           </div>
 
@@ -1527,11 +1524,11 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
         <Section className="bg-gradient-to-b from-stone-900/50 to-amber-900/20">
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Protect Your Puppy Today
+              Compare Puppy Insurance Prices & Cockapoo Insurance UK Today
             </h2>
             <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">
-              Don&apos;t wait until it&apos;s too late. Get a free, personalised quote in minutes and give your
-              furry friend the protection they deserve.
+              Don&apos;t wait - compare <strong>puppy insurance prices</strong> now! Get a free, personalised <strong>Cockapoo insurance UK</strong> quote in minutes and give your
+              furry friend the protection they deserve with the best <strong>puppy insurance prices</strong>.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <button
