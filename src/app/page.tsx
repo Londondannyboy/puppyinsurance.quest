@@ -1560,30 +1560,38 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
               Discover our other insurance comparison tools to protect what matters most.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+            <a href="https://yogateacherinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Yoga Teacher Insurance</span>
+              <span className="block text-sm text-white/60">Professional indemnity for instructors</span>
+            </a>
+            <a href="https://tractorinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Tractor Insurance</span>
+              <span className="block text-sm text-white/60">Insurance for farm machinery</span>
+            </a>
+            <a href="https://mobilityscooterinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Mobility Scooter Insurance</span>
+              <span className="block text-sm text-white/60">Protect your mobility device</span>
+            </a>
+            <a href="https://insulinpumpinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Insulin Pump Insurance</span>
+              <span className="block text-sm text-white/60">Medical device coverage</span>
+            </a>
+            <a href="https://villagefeteinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Village Fete Insurance</span>
+              <span className="block text-sm text-white/60">Event liability coverage</span>
+            </a>
             <a href="https://homeinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
               <span className="font-medium text-white">Home Insurance</span>
-              <span className="block text-sm text-white/60">Compare home insurance quotes</span>
-            </a>
-            <a href="https://healthinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
-              <span className="font-medium text-white">Health Insurance</span>
-              <span className="block text-sm text-white/60">Compare private health insurance</span>
+              <span className="block text-sm text-white/60">Buildings & contents cover</span>
             </a>
             <a href="https://travelinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
               <span className="font-medium text-white">Travel Insurance</span>
-              <span className="block text-sm text-white/60">Compare travel insurance policies</span>
+              <span className="block text-sm text-white/60">Holiday & trip protection</span>
             </a>
             <a href="https://motorinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
               <span className="font-medium text-white">Motor Insurance</span>
               <span className="block text-sm text-white/60">Compare car insurance quotes</span>
-            </a>
-            <a href="https://bikeinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
-              <span className="font-medium text-white">Bike Insurance</span>
-              <span className="block text-sm text-white/60">Protect your bicycle from theft</span>
-            </a>
-            <a href="https://tractorinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
-              <span className="font-medium text-white">Tractor Insurance</span>
-              <span className="block text-sm text-white/60">Insurance for farm and garden tractors</span>
             </a>
           </div>
         </Section>
