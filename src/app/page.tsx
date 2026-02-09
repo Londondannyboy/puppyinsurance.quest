@@ -1550,6 +1550,44 @@ ${state.currentQuote ? `CURRENT QUOTE: $${state.currentQuote.quote.monthlyPremiu
           </div>
         </Section>
 
+        {/* Related UK Insurance */}
+        <Section className="bg-stone-900/30">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              Explore More UK Insurance
+            </h2>
+            <p className="text-white/70 max-w-2xl mx-auto">
+              Discover our other insurance comparison tools to protect what matters most.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            <a href="https://homeinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Home Insurance</span>
+              <span className="block text-sm text-white/60">Compare home insurance quotes</span>
+            </a>
+            <a href="https://healthinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Health Insurance</span>
+              <span className="block text-sm text-white/60">Compare private health insurance</span>
+            </a>
+            <a href="https://travelinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Travel Insurance</span>
+              <span className="block text-sm text-white/60">Compare travel insurance policies</span>
+            </a>
+            <a href="https://motorinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Motor Insurance</span>
+              <span className="block text-sm text-white/60">Compare car insurance quotes</span>
+            </a>
+            <a href="https://bikeinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Bike Insurance</span>
+              <span className="block text-sm text-white/60">Protect your bicycle from theft</span>
+            </a>
+            <a href="https://tractorinsurance.quest" className="block p-4 rounded-xl bg-stone-900/60 border border-stone-700/50 hover:border-amber-500/30 transition-all">
+              <span className="font-medium text-white">Tractor Insurance</span>
+              <span className="block text-sm text-white/60">Insurance for farm and garden tractors</span>
+            </a>
+          </div>
+        </Section>
+
         {/* Quick Chat Prompts (Floating) */}
         {!loading && !state.currentQuote && (
           <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:w-96 z-50">
